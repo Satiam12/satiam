@@ -1,3 +1,4 @@
+import { get, put } from "@vercel/blob";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -70,6 +71,7 @@ export type PortfolioConfig = {
 
 const configPath = path.join(process.cwd(), "data", "portfolio-config.json");
 const uploadsPath = path.join(process.cwd(), "public", "uploads");
+const blobConfigPath = "portfolio/config.json";
 
 export const defaultPortfolioConfig: PortfolioConfig = {
   site: {
@@ -253,6 +255,23 @@ export async function ensurePortfolioStorage() {
 export async function getPortfolioConfig() {
   await ensurePortfolioStorage();
 
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blobResult = await get(blobConfigPath, { access: "public" });
+
+    if (blobResult) {
+      const content = await new Response(blobResult.stream).text();
+      return mergePortfolioConfig(JSON.parse(content) as Partial<PortfolioConfig>);
+    }
+
+    await put(blobConfigPath, JSON.stringify(defaultPortfolioConfig, null, 2), {
+      access: "public",
+      allowOverwrite: true,
+      contentType: "application/json",
+    });
+
+    return defaultPortfolioConfig;
+  }
+
   try {
     const content = await readFile(configPath, "utf8");
     return mergePortfolioConfig(JSON.parse(content) as Partial<PortfolioConfig>);
@@ -268,6 +287,23 @@ export async function getPortfolioConfig() {
 
 export async function savePortfolioConfig(config: PortfolioConfig) {
   const normalized = mergePortfolioConfig(config);
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    await put(blobConfigPath, JSON.stringify(normalized, null, 2), {
+      access: "public",
+      allowOverwrite: true,
+      contentType: "application/json",
+    });
+
+    return normalized;
+  }
+
+  if (process.env.VERCEL) {
+    throw new Error(
+      "BLOB_READ_WRITE_TOKEN manquant sur Vercel. Ajoute cette variable pour sauvegarder la configuration.",
+    );
+  }
+
   await ensurePortfolioStorage();
   await writeFile(configPath, JSON.stringify(normalized, null, 2), "utf8");
   return normalized;

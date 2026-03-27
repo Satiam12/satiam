@@ -294,7 +294,8 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
       });
 
       if (!response.ok) {
-        setStatus("Erreur pendant l'enregistrement");
+        const errorData = (await response.json()) as { error?: string };
+        setStatus(errorData.error ?? "Erreur pendant l'enregistrement");
         return;
       }
 
