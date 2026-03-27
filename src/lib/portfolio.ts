@@ -178,6 +178,13 @@ export async function getPortfolioConfig() {
 
 export async function savePortfolioConfig(config: PortfolioConfig) {
   const normalized = mergePortfolioConfig(config);
+
+  if (process.env.VERCEL) {
+    throw new Error(
+      "Sur Vercel, cette version simple ne peut pas enregistrer durablement les changements. Il faut un stockage externe ou modifier les fichiers via Git.",
+    );
+  }
+
   await ensurePortfolioStorage();
   await writeFile(configPath, JSON.stringify(normalized, null, 2), "utf8");
   return normalized;

@@ -112,6 +112,7 @@ img {
   align-items: center;
   border-radius: 999px;
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   justify-content: space-between;
   margin: 0 auto 24px;
@@ -178,6 +179,7 @@ html[data-theme="dark"] .statusText {
   align-items: center;
   display: flex;
   gap: 10px;
+  margin-left: auto;
 }
 
 .languageToggle {
@@ -202,6 +204,22 @@ html[data-theme="dark"] .statusText {
 .languageButton.active {
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   color: #fffaf3;
+}
+
+.socialIconLink {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  display: inline-flex;
+  height: 46px;
+  justify-content: center;
+  width: 46px;
+}
+
+.socialIconLink svg {
+  height: 18px;
+  width: 18px;
 }
 
 .nav a,

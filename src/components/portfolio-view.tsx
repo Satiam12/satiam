@@ -12,6 +12,48 @@ type PortfolioViewProps = {
   config: PortfolioConfig;
 };
 
+function SocialIcon({ label }: { label: string }) {
+  const lower = label.toLowerCase();
+
+  if (lower.includes("facebook")) {
+    return (
+      <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M13.5 22v-8h2.7l.4-3h-3.1V9.1c0-.9.3-1.6 1.7-1.6H16.7V4.8c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4V11H8v3h2.5v8h3Z" />
+      </svg>
+    );
+  }
+
+  if (lower.includes("instagram")) {
+    return (
+      <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M7.8 3h8.4A4.8 4.8 0 0 1 21 7.8v8.4a4.8 4.8 0 0 1-4.8 4.8H7.8A4.8 4.8 0 0 1 3 16.2V7.8A4.8 4.8 0 0 1 7.8 3Zm0 1.8A3 3 0 0 0 4.8 7.8v8.4a3 3 0 0 0 3 3h8.4a3 3 0 0 0 3-3V7.8a3 3 0 0 0-3-3H7.8Zm8.85 1.35a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1ZM12 7.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5Zm0 1.8A2.7 2.7 0 1 0 14.7 12 2.7 2.7 0 0 0 12 9.3Z" />
+      </svg>
+    );
+  }
+
+  if (lower.includes("linkedin")) {
+    return (
+      <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M6.2 8.3A1.8 1.8 0 1 1 6.2 4.7a1.8 1.8 0 0 1 0 3.6ZM4.7 9.8h3v9.5h-3V9.8Zm4.8 0h2.9v1.3h.1c.4-.8 1.4-1.6 2.8-1.6 3 0 3.6 2 3.6 4.6v5.2h-3v-4.6c0-1.1 0-2.5-1.5-2.5s-1.8 1.2-1.8 2.4v4.7h-3V9.8Z" />
+      </svg>
+    );
+  }
+
+  if (lower.includes("github")) {
+    return (
+      <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2.5A9.5 9.5 0 0 0 9 21.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.5-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.6 1.1 1.6 1.1.9 1.5 2.4 1.1 3 .8.1-.7.4-1.1.6-1.4-2.2-.2-4.5-1.1-4.5-5A3.9 3.9 0 0 1 7.6 8c-.1-.2-.4-1.2.1-2.6 0 0 .8-.2 2.6 1a8.9 8.9 0 0 1 4.8 0c1.8-1.2 2.6-1 2.6-1 .5 1.4.2 2.4.1 2.6a3.9 3.9 0 0 1 1 2.7c0 3.9-2.3 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A9.5 9.5 0 0 0 12 2.5Z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 2 2 7v5c0 5.5 3.8 10.6 10 12 6.2-1.4 10-6.5 10-12V7L12 2Zm0 2.2 7.5 3.7v4.1c0 4.4-2.9 8.6-7.5 9.9-4.6-1.3-7.5-5.5-7.5-9.9V7.9L12 4.2Z" />
+    </svg>
+  );
+}
+
 type PortfolioLanguage = "fr" | "mg" | "en";
 
 const translations: Record<
@@ -138,12 +180,12 @@ export function PortfolioView({ config }: PortfolioViewProps) {
               </button>
             ))}
           </div>
-        <ThemeToggle
-          defaultMode={config.preferences.defaultMode}
-          darkLabel={copy.theme.dark}
-          enabled={config.preferences.showDarkModeToggle}
-          lightLabel={copy.theme.light}
-        />
+          <ThemeToggle
+            defaultMode={config.preferences.defaultMode}
+            darkLabel={copy.theme.dark}
+            enabled={config.preferences.showDarkModeToggle}
+            lightLabel={copy.theme.light}
+          />
         </div>
       </header>
 
@@ -244,8 +286,16 @@ export function PortfolioView({ config }: PortfolioViewProps) {
               </a>
               <div className="socialRow">
                 {config.socialLinks.map((link) => (
-                  <a href={link.href} key={link.label} rel="noreferrer" target="_blank">
-                    {link.label}
+                  <a
+                    aria-label={link.label}
+                    className="socialIconLink"
+                    href={link.href}
+                    key={link.label}
+                    rel="noreferrer"
+                    target="_blank"
+                    title={link.label}
+                  >
+                    <SocialIcon label={link.label} />
                   </a>
                 ))}
               </div>
