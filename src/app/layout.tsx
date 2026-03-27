@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import {
+  Cormorant_Garamond,
+  DM_Sans,
+  Libre_Baskerville,
+  Manrope,
+  Space_Grotesk,
+} from "next/font/google";
 
 import "./globals.css";
 
@@ -14,6 +20,22 @@ const bodyFont = Manrope({
   variable: "--font-body",
 });
 
+const modernHeadingFont = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-heading-modern",
+});
+
+const modernBodyFont = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-body-modern",
+});
+
+const classicHeadingFont = Libre_Baskerville({
+  subsets: ["latin"],
+  variable: "--font-heading-classic",
+  weight: ["400", "700"],
+});
+
 export const metadata: Metadata = {
   title: "satiam | Portfolio",
   description: "Portfolio personnalisable avec admin Next.js et deploiement Vercel",
@@ -26,7 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      className={`${headingFont.variable} ${bodyFont.variable}`}
+      className={`${headingFont.variable} ${bodyFont.variable} ${modernHeadingFont.variable} ${modernBodyFont.variable} ${classicHeadingFont.variable}`}
       data-theme="light"
       lang="fr"
     >

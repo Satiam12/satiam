@@ -2,14 +2,21 @@
 
 import { useEffect, useState } from "react";
 
-import type { ThemeMode } from "@/lib/portfolio";
+import type { ThemeMode } from "@/lib/portfolio-types";
 
 type ThemeToggleProps = {
   defaultMode: ThemeMode;
   enabled: boolean;
+  darkLabel?: string;
+  lightLabel?: string;
 };
 
-export function ThemeToggle({ defaultMode, enabled }: ThemeToggleProps) {
+export function ThemeToggle({
+  defaultMode,
+  enabled,
+  darkLabel = "Mode sombre",
+  lightLabel = "Mode clair",
+}: ThemeToggleProps) {
   const [mode, setMode] = useState<ThemeMode>(defaultMode);
 
   useEffect(() => {
@@ -28,7 +35,7 @@ export function ThemeToggle({ defaultMode, enabled }: ThemeToggleProps) {
 
   return (
     <button className="themeToggle" onClick={toggleTheme} type="button">
-      <span>{mode === "light" ? "Mode sombre" : "Mode clair"}</span>
+      <span>{mode === "light" ? darkLabel : lightLabel}</span>
     </button>
   );
 }

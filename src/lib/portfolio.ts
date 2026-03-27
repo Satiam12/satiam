@@ -1,104 +1,9 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { createClient } from "@supabase/supabase-js";
 
-export type ThemeMode = "light" | "dark";
-
-export type PortfolioConfig = {
-  site: {
-    ownerName: string;
-    navTitle: string;
-    location: string;
-  };
-  theme: {
-    primary: string;
-    secondary: string;
-    accent: string;
-    background: string;
-    surface: string;
-    text: string;
-    muted: string;
-    darkBackground: string;
-    darkSurface: string;
-    darkText: string;
-    darkMuted: string;
-  };
-  preferences: {
-    defaultMode: ThemeMode;
-    showDarkModeToggle: boolean;
-  };
-  hero: {
-    badge: string;
-    title: string;
-    subtitle: string;
-    description: string;
-    showProfileImage: boolean;
-    profileImage: string;
-    primaryButton: { label: string; href: string; enabled: boolean };
-    secondaryButton: { label: string; href: string; enabled: boolean };
-    heroImage: string;
-    stats: Array<{ label: string; value: string }>;
-  };
-  about: {
-    enabled: boolean;
-    heading: string;
-    body: string;
-  };
-  services: {
-    enabled: boolean;
-    heading: string;
-    items: Array<{ title: string; description: string }>;
-  };
-  projects: {
-    enabled: boolean;
-    heading: string;
-    items: Array<{ name: string; summary: string; url: string; image?: string }>;
-  };
-  gallery: {
-    enabled: boolean;
-    heading: string;
-    images: Array<{ src: string; alt: string }>;
-  };
-  contact: {
-    enabled: boolean;
-    heading: string;
-    email: string;
-    phone: string;
-    callToAction: string;
-  };
-  socialLinks: Array<{ label: string; href: string }>;
-};
+import type { PortfolioConfig } from "@/lib/portfolio-types";
 
 const configPath = path.join(process.cwd(), "data", "portfolio-config.json");
-const uploadsPath = path.join(process.cwd(), "public", "uploads");
-export const portfolioMediaBucket =
-  process.env.SUPABASE_STORAGE_BUCKET ?? "portfolio-media";
-
-type SupabasePortfolioRow = {
-  key: string;
-  data: Partial<PortfolioConfig>;
-  updated_at?: string;
-};
-
-export function getSupabaseServerClient() {
-  const url = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url || !serviceRoleKey) {
-    return null;
-  }
-
-  return createClient(url, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-}
-
-export function isSupabaseConfigured() {
-  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
-}
 
 export const defaultPortfolioConfig: PortfolioConfig = {
   site: {
@@ -122,15 +27,14 @@ export const defaultPortfolioConfig: PortfolioConfig = {
   preferences: {
     defaultMode: "light",
     showDarkModeToggle: true,
+    fontPreset: "editorial",
   },
   hero: {
     badge: "Portfolio personnalisable",
     title: "Je transforme mes idees en experiences web nettes, rapides et memorables.",
     subtitle: "Designer developpeur freelance",
     description:
-      "Portfolio Next.js personnalisable. Chaque section, bouton, photo et couleur peut etre modifiee sans toucher au code.",
-    showProfileImage: true,
-    profileImage: "/uploads/satiam-hero.svg",
+      "Portfolio Next.js simple a ajuster: textes, sections, couleurs, mode clair ou sombre et polices.",
     primaryButton: {
       label: "Demarrer un projet",
       href: "#contact",
@@ -141,7 +45,6 @@ export const defaultPortfolioConfig: PortfolioConfig = {
       href: "#projects",
       enabled: true,
     },
-    heroImage: "/uploads/satiam-hero.svg",
     stats: [
       { label: "Projets livres", value: "18+" },
       { label: "Clients accompagnes", value: "11" },
@@ -183,31 +86,17 @@ export const defaultPortfolioConfig: PortfolioConfig = {
         summary:
           "Landing page premium avec storytelling visuel et formulaire de conversion.",
         url: "https://example.com",
-        image: "/uploads/satiam-hero.svg",
       },
       {
         name: "Atelier Mono",
-        summary:
-          "Portfolio minimaliste avec CMS maison et galerie medias modulable.",
+        summary: "Portfolio minimaliste avec zone d'edition simple et rapide.",
         url: "https://example.com",
-        image: "",
       },
       {
         name: "Pulse Event",
         summary:
           "Site evenementiel avec planning, speakers et edition rapide du contenu.",
         url: "https://example.com",
-        image: "",
-      },
-    ],
-  },
-  gallery: {
-    enabled: true,
-    heading: "Galerie",
-    images: [
-      {
-        src: "/uploads/satiam-hero.svg",
-        alt: "Visuel hero du portfolio satiam",
       },
     ],
   },
@@ -249,8 +138,6 @@ function mergePortfolioConfig(
         ...defaultPortfolioConfig.hero.secondaryButton,
         ...incoming?.hero?.secondaryButton,
       },
-      profileImage:
-        incoming?.hero?.profileImage ?? defaultPortfolioConfig.hero.profileImage,
       stats: incoming?.hero?.stats ?? defaultPortfolioConfig.hero.stats,
     },
     about: { ...defaultPortfolioConfig.about, ...incoming?.about },
@@ -264,11 +151,6 @@ function mergePortfolioConfig(
       ...incoming?.projects,
       items: incoming?.projects?.items ?? defaultPortfolioConfig.projects.items,
     },
-    gallery: {
-      ...defaultPortfolioConfig.gallery,
-      ...incoming?.gallery,
-      images: incoming?.gallery?.images ?? defaultPortfolioConfig.gallery.images,
-    },
     contact: { ...defaultPortfolioConfig.contact, ...incoming?.contact },
     socialLinks: incoming?.socialLinks ?? defaultPortfolioConfig.socialLinks,
   };
@@ -276,48 +158,10 @@ function mergePortfolioConfig(
 
 export async function ensurePortfolioStorage() {
   await mkdir(path.dirname(configPath), { recursive: true });
-  await mkdir(uploadsPath, { recursive: true });
 }
 
 export async function getPortfolioConfig() {
   await ensurePortfolioStorage();
-
-  const supabase = getSupabaseServerClient();
-
-  if (supabase) {
-    const { data, error } = await supabase
-      .from("portfolio_configs")
-      .select("key, data, updated_at")
-      .eq("key", "primary")
-      .maybeSingle<SupabasePortfolioRow>();
-
-    if (error) {
-      throw new Error(
-        `Lecture Supabase impossible: ${error.message}. Verifie la table portfolio_configs.`,
-      );
-    }
-
-    if (data?.data) {
-      return mergePortfolioConfig(data.data);
-    }
-
-    const initialConfig = mergePortfolioConfig(defaultPortfolioConfig);
-    const { error: insertError } = await supabase.from("portfolio_configs").upsert(
-      {
-        key: "primary",
-        data: initialConfig,
-      },
-      { onConflict: "key" },
-    );
-
-    if (insertError) {
-      throw new Error(
-        `Initialisation Supabase impossible: ${insertError.message}.`,
-      );
-    }
-
-    return initialConfig;
-  }
 
   try {
     const content = await readFile(configPath, "utf8");
@@ -334,50 +178,7 @@ export async function getPortfolioConfig() {
 
 export async function savePortfolioConfig(config: PortfolioConfig) {
   const normalized = mergePortfolioConfig(config);
-
-  const supabase = getSupabaseServerClient();
-
-  if (supabase) {
-    const { error } = await supabase.from("portfolio_configs").upsert(
-      {
-        key: "primary",
-        data: normalized,
-      },
-      { onConflict: "key" },
-    );
-
-    if (error) {
-      throw new Error(
-        `Sauvegarde Supabase impossible: ${error.message}.`,
-      );
-    }
-
-    return normalized;
-  }
-
-  if (process.env.VERCEL) {
-    throw new Error(
-      "SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant sur Vercel. Configure Supabase pour sauvegarder la configuration.",
-    );
-  }
-
   await ensurePortfolioStorage();
   await writeFile(configPath, JSON.stringify(normalized, null, 2), "utf8");
   return normalized;
-}
-
-export function getThemeStyles(config: PortfolioConfig): Record<string, string> {
-  return {
-    "--color-primary": config.theme.primary,
-    "--color-secondary": config.theme.secondary,
-    "--color-accent": config.theme.accent,
-    "--color-background": config.theme.background,
-    "--color-surface": config.theme.surface,
-    "--color-text": config.theme.text,
-    "--color-muted": config.theme.muted,
-    "--color-dark-background": config.theme.darkBackground,
-    "--color-dark-surface": config.theme.darkSurface,
-    "--color-dark-text": config.theme.darkText,
-    "--color-dark-muted": config.theme.darkMuted,
-  };
 }

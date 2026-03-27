@@ -1,7 +1,8 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
-import { savePortfolioConfig, type PortfolioConfig } from "@/lib/portfolio";
+import { savePortfolioConfig } from "@/lib/portfolio";
+import type { PortfolioConfig } from "@/lib/portfolio-types";
 
 export async function PUT(request: Request) {
   try {

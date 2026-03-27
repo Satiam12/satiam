@@ -7,10 +7,10 @@
   "theme": {
     "primary": "#d05f32",
     "secondary": "#f3b57d",
-    "accent": "#1cc4b1",
-    "background": "#89652f",
+    "accent": "#1d6c63",
+    "background": "#f7efe3",
     "surface": "#fff8ef",
-    "text": "#712e14",
+    "text": "#24150f",
     "muted": "#6b564c",
     "darkBackground": "#101213",
     "darkSurface": "#171d1f",
@@ -19,26 +19,24 @@
   },
   "preferences": {
     "defaultMode": "light",
-    "showDarkModeToggle": true
+    "showDarkModeToggle": true,
+    "fontPreset": "editorial"
   },
   "hero": {
-    "badge": "Portfolio ",
+    "badge": "Portfolio personnalisable",
     "title": "Je transforme mes idees en experiences web nettes, rapides et memorables.",
     "subtitle": "Designer developpeur freelance",
-    "description": "Portfolio Next.js personnalisable. Chaque section, bouton, photo et couleur peut etre modifiee sans toucher au code.",
-    "showProfileImage": false,
-    "profileImage": "",
+    "description": "Portfolio Next.js simple a ajuster: textes, sections, couleurs, mode clair ou sombre et polices.",
     "primaryButton": {
       "label": "Demarrer un projet",
       "href": "#contact",
-      "enabled": false
+      "enabled": true
     },
     "secondaryButton": {
       "label": "Voir mes projets",
       "href": "#projects",
       "enabled": true
     },
-    "heroImage": "",
     "stats": [
       {
         "label": "Projets livres",
@@ -57,7 +55,7 @@
   "about": {
     "enabled": true,
     "heading": "A propos",
-    "body": "Je construis des sites et interfaces qui donnent confiance des les premieres secondes. Mon approche melange direction artistique, structure claire et outils modernes pour livrer des experiences faciles a administrer."
+    "body": "Je construis des sites et interfaces qui donnent confiance des les premieres secondes. Mon approche melange direction artistique, structure claire et outils modernes pour livrer des experiences simples a faire evoluer."
   },
   "services": {
     "enabled": true,
@@ -69,11 +67,11 @@
       },
       {
         "title": "Developpement Next.js",
-        "description": "Interfaces rapides, pages admin, formulaires et deploiement Vercel."
+        "description": "Interfaces rapides, panneaux de gestion, formulaires et deploiement Vercel."
       },
       {
         "title": "Autonomie client",
-        "description": "Outils simples pour changer le contenu, les sections et les visuels sans redeploiement manuel."
+        "description": "Outils simples pour changer le contenu, les sections sans toucher au code."
       }
     ]
   },
@@ -84,27 +82,19 @@
       {
         "name": "Studio Horizon",
         "summary": "Landing page premium avec storytelling visuel et formulaire de conversion.",
-        "url": "https://example.com",
-        "image": ""
+        "url": "https://example.com"
       },
       {
         "name": "Atelier Mono",
-        "summary": "Portfolio minimaliste avec CMS maison et galerie medias modulable.",
-        "url": "https://example.com",
-        "image": ""
+        "summary": "Portfolio minimaliste avec zone d'edition simple et rapide.",
+        "url": "https://example.com"
       },
       {
         "name": "Pulse Event",
         "summary": "Site evenementiel avec planning, speakers et edition rapide du contenu.",
-        "url": "https://example.com",
-        "image": ""
+        "url": "https://example.com"
       }
     ]
-  },
-  "gallery": {
-    "enabled": true,
-    "heading": "Galerie",
-    "images": []
   },
   "contact": {
     "enabled": true,

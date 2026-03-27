@@ -55,6 +55,21 @@ html[data-theme="dark"] body {
   color: var(--color-dark-text);
 }
 
+[data-font-preset="editorial"] {
+  --active-font-heading: var(--font-heading);
+  --active-font-body: var(--font-body);
+}
+
+[data-font-preset="modern"] {
+  --active-font-heading: var(--font-heading-modern);
+  --active-font-body: var(--font-body-modern);
+}
+
+[data-font-preset="classic"] {
+  --active-font-heading: var(--font-heading-classic);
+  --active-font-body: var(--font-heading-classic);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -118,7 +133,7 @@ img {
 .contentSection h2,
 .adminSidebar h1,
 .adminCard h2 {
-  font-family: var(--font-heading), serif;
+  font-family: var(--active-font-heading, var(--font-heading)), serif;
 }
 
 .brand small {
@@ -132,7 +147,6 @@ html[data-theme="dark"] .lead,
 html[data-theme="dark"] .sectionTag,
 html[data-theme="dark"] .infoCard p,
 html[data-theme="dark"] .projectCard p,
-html[data-theme="dark"] .galleryCard figcaption,
 html[data-theme="dark"] .adminSidebar p,
 html[data-theme="dark"] .statusText {
   color: var(--color-dark-muted);
@@ -158,6 +172,36 @@ html[data-theme="dark"] .statusText {
   flex-wrap: wrap;
   gap: 14px;
   justify-content: center;
+}
+
+.toolbarGroup {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.languageToggle {
+  background: rgba(255, 255, 255, 0.26);
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+}
+
+.languageButton {
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  color: inherit;
+  cursor: pointer;
+  min-width: 48px;
+  padding: 10px 12px;
+}
+
+.languageButton.active {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: #fffaf3;
 }
 
 .nav a,
@@ -212,30 +256,13 @@ html[data-theme="dark"] .statusText {
   padding: 42px;
 }
 
+.heroPanelTextOnly {
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+}
+
 .heroCopy {
   position: relative;
   z-index: 1;
-}
-
-.profileBadge {
-  align-items: center;
-  display: inline-flex;
-  gap: 14px;
-  margin-bottom: 18px;
-}
-
-.profileBadge span {
-  color: var(--color-muted);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.profileImage {
-  border: 3px solid rgba(255, 255, 255, 0.5);
-  border-radius: 50%;
-  height: 72px;
-  object-fit: cover;
-  width: 72px;
 }
 
 .eyebrow,
@@ -265,10 +292,11 @@ html[data-theme="dark"] .statusText {
 .splitHeading p,
 .infoCard p,
 .projectCard p,
-.galleryCard figcaption,
 .adminSidebar p,
-.statusText {
+.statusText,
+.heroTextBlock p {
   color: var(--color-muted);
+  font-family: var(--active-font-body, var(--font-body)), sans-serif;
 }
 
 .lead {
@@ -296,6 +324,15 @@ html[data-theme="dark"] .statusText {
   display: flex;
   flex-wrap: wrap;
   margin-top: 24px;
+}
+
+.heroTextBlock {
+  background: rgba(255, 255, 255, 0.24);
+  border: 1px solid var(--surface-border);
+  border-radius: 30px;
+  display: grid;
+  gap: 14px;
+  padding: 26px;
 }
 
 .stackList {
@@ -370,8 +407,7 @@ html[data-theme="dark"] .buttonDanger {
 
 .statCard,
 .infoCard,
-.projectCard,
-.galleryCard {
+.projectCard {
   background: rgba(255, 255, 255, 0.28);
   border: 1px solid var(--surface-border);
   border-radius: 26px;
@@ -380,8 +416,7 @@ html[data-theme="dark"] .buttonDanger {
 
 html[data-theme="dark"] .statCard,
 html[data-theme="dark"] .infoCard,
-html[data-theme="dark"] .projectCard,
-html[data-theme="dark"] .galleryCard {
+html[data-theme="dark"] .projectCard {
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -389,42 +424,6 @@ html[data-theme="dark"] .galleryCard {
   display: block;
   font-size: 1.8rem;
   margin-bottom: 8px;
-}
-
-.heroVisual {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  min-height: 520px;
-  position: relative;
-}
-
-.halo {
-  background:
-    radial-gradient(circle, rgba(208, 95, 50, 0.4), transparent 58%),
-    radial-gradient(circle at bottom right, rgba(29, 108, 99, 0.38), transparent 40%);
-  filter: blur(10px);
-  inset: 8% 4%;
-  position: absolute;
-}
-
-.heroImage {
-  border-radius: 28px;
-  max-height: 680px;
-  object-fit: cover;
-  position: relative;
-  width: 100%;
-}
-
-.heroFallback {
-  align-items: center;
-  background: rgba(255, 255, 255, 0.24);
-  border: 1px dashed var(--surface-border);
-  color: var(--color-muted);
-  display: flex;
-  justify-content: center;
-  min-height: 420px;
-  padding: 32px;
 }
 
 .contentSection {
@@ -462,7 +461,6 @@ html[data-theme="dark"] .galleryCard {
 }
 
 .projectList,
-.galleryGrid,
 .adminPanels {
   grid-template-columns: 1fr;
 }
@@ -475,23 +473,8 @@ html[data-theme="dark"] .galleryCard {
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
-.projectImage {
-  aspect-ratio: 16 / 9;
-  border-radius: 18px;
-  grid-column: 1 / -1;
-  object-fit: cover;
-  width: 100%;
-}
-
-.galleryGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.galleryCard img {
-  aspect-ratio: 4 / 3;
-  border-radius: 18px;
-  object-fit: cover;
-  width: 100%;
+.projectCardSimple {
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .contactDetails {
@@ -738,7 +721,6 @@ input[type="color"] {
   .contactCard,
   .adminShell,
   .cardGrid,
-  .galleryGrid,
   .colorGrid,
   .adminHeroCard,
   .paletteSuggestionGrid {
@@ -800,6 +782,7 @@ input[type="color"] {
   .themeToggle,
   .buttonPrimary,
   .buttonGhost,
+  .languageToggle,
   .adminSidebar button,
   .buttonPrimaryAction,
   .buttonSecondary,
@@ -815,6 +798,10 @@ input[type="color"] {
     justify-content: start;
   }
 
+  .toolbarGroup {
+    width: 100%;
+  }
+
   .heroPanel,
   .contentSection,
   .adminCard,
@@ -823,10 +810,6 @@ input[type="color"] {
   }
 
   .projectCard {
-    grid-template-columns: 1fr;
-  }
-
-  .galleryGrid {
     grid-template-columns: 1fr;
   }
 

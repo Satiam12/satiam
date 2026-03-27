@@ -1,7 +1,10 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 import type { CSSProperties } from "react";
 
-import { getThemeStyles, type PortfolioConfig } from "@/lib/portfolio";
+import { getThemeStyles } from "@/lib/portfolio-theme";
+import type { PortfolioConfig } from "@/lib/portfolio-types";
 
 import { ThemeToggle } from "./theme-toggle";
 
@@ -9,22 +12,104 @@ type PortfolioViewProps = {
   config: PortfolioConfig;
 };
 
+type PortfolioLanguage = "fr" | "mg" | "en";
+
+const translations: Record<
+  PortfolioLanguage,
+  {
+    langLabel: string;
+    sections: { about: string; services: string; projects: string; contact: string };
+    theme: { dark: string; light: string };
+    styleActive: string;
+    styleText: string;
+    aboutTitle: string;
+    servicesTitle: string;
+    projectsTitle: string;
+    openProject: string;
+  }
+> = {
+  fr: {
+    langLabel: "FR",
+    sections: {
+      about: "A propos",
+      services: "Services",
+      projects: "Projets",
+      contact: "Contact",
+    },
+    theme: { dark: "Mode sombre", light: "Mode clair" },
+    styleActive: "Style actif",
+    styleText:
+      "Modifie les textes, les couleurs, le mode clair ou sombre et la police directement depuis l'interface privee.",
+    aboutTitle: "Une presence digitale qui reste simple a faire evoluer.",
+    servicesTitle: "Un portfolio qui suit ton rythme.",
+    projectsTitle: "Selection recente",
+    openProject: "Ouvrir",
+  },
+  mg: {
+    langLabel: "MG",
+    sections: {
+      about: "Momba ahy",
+      services: "Tolotra",
+      projects: "Tetikasa",
+      contact: "Fifandraisana",
+    },
+    theme: { dark: "Mody maizina", light: "Mody mazava" },
+    styleActive: "Endrika ampiasaina",
+    styleText:
+      "Ovay ny lahatsoratra, ny loko, ny maody mazava na maizina ary ny polisy avy hatrany amin'ny pejy fitantanana miafina.",
+    aboutTitle: "Fisiana an-tserasera mora ovaina hatrany.",
+    servicesTitle: "Portfolio afaka manaraka ny filanao.",
+    projectsTitle: "Safidy vao haingana",
+    openProject: "Sokafy",
+  },
+  en: {
+    langLabel: "EN",
+    sections: {
+      about: "About",
+      services: "Services",
+      projects: "Projects",
+      contact: "Contact",
+    },
+    theme: { dark: "Dark mode", light: "Light mode" },
+    styleActive: "Active style",
+    styleText:
+      "Edit text, colors, light or dark mode, and typography directly from the private control space.",
+    aboutTitle: "A digital presence that stays easy to evolve.",
+    servicesTitle: "A portfolio that moves at your pace.",
+    projectsTitle: "Recent selection",
+    openProject: "Open",
+  },
+};
+
 export function PortfolioView({ config }: PortfolioViewProps) {
+  const [language, setLanguage] = useState<PortfolioLanguage>(() => {
+    if (typeof window === "undefined") {
+      return "fr";
+    }
+
+    const stored = window.localStorage.getItem("portfolio-language");
+    return stored === "fr" || stored === "mg" || stored === "en" ? stored : "fr";
+  });
   const themeStyles = getThemeStyles(config) as CSSProperties;
+  const copy = translations[language];
   const sectionLinks = [
-    config.about.enabled ? { id: "about", label: config.about.heading } : null,
-    config.services.enabled
-      ? { id: "services", label: config.services.heading }
-      : null,
-    config.projects.enabled
-      ? { id: "projects", label: config.projects.heading }
-      : null,
-    config.gallery.enabled ? { id: "gallery", label: config.gallery.heading } : null,
-    config.contact.enabled ? { id: "contact", label: config.contact.heading } : null,
+    config.about.enabled ? { id: "about", label: copy.sections.about } : null,
+    config.services.enabled ? { id: "services", label: copy.sections.services } : null,
+    config.projects.enabled ? { id: "projects", label: copy.sections.projects } : null,
+    config.contact.enabled ? { id: "contact", label: copy.sections.contact } : null,
   ].filter(Boolean) as Array<{ id: string; label: string }>;
 
+  function changeLanguage(nextLanguage: PortfolioLanguage) {
+    setLanguage(nextLanguage);
+    window.localStorage.setItem("portfolio-language", nextLanguage);
+  }
+
   return (
-    <div className="portfolioShell" style={themeStyles}>
+    <div
+      className="portfolioShell"
+      data-font-preset={config.preferences.fontPreset}
+      style={themeStyles}
+    >
       <header className="topbar">
         <a className="brand" href="#home">
           <span className="brandMark">{config.site.ownerName.slice(0, 2)}</span>
@@ -40,28 +125,31 @@ export function PortfolioView({ config }: PortfolioViewProps) {
             </a>
           ))}
         </nav>
+        <div className="toolbarGroup">
+          <div className="languageToggle" role="group" aria-label="Language">
+            {(["mg", "fr", "en"] as const).map((lang) => (
+              <button
+                className={language === lang ? "languageButton active" : "languageButton"}
+                key={lang}
+                onClick={() => changeLanguage(lang)}
+                type="button"
+              >
+                {translations[lang].langLabel}
+              </button>
+            ))}
+          </div>
         <ThemeToggle
           defaultMode={config.preferences.defaultMode}
+          darkLabel={copy.theme.dark}
           enabled={config.preferences.showDarkModeToggle}
+          lightLabel={copy.theme.light}
         />
+        </div>
       </header>
 
       <main id="home">
-        <section className="heroPanel">
+        <section className="heroPanel heroPanelTextOnly">
           <div className="heroCopy">
-            {config.hero.showProfileImage && config.hero.profileImage ? (
-              <div className="profileBadge">
-                <Image
-                  alt={`Portrait ${config.site.ownerName}`}
-                  className="profileImage"
-                  height={144}
-                  src={config.hero.profileImage}
-                  unoptimized
-                  width={144}
-                />
-                <span>Photo de profil</span>
-              </div>
-            ) : null}
             <span className="eyebrow">{config.hero.badge}</span>
             <p className="subtitle">{config.hero.subtitle}</p>
             <h1>{config.hero.title}</h1>
@@ -87,28 +175,18 @@ export function PortfolioView({ config }: PortfolioViewProps) {
               ))}
             </div>
           </div>
-          <div className="heroVisual">
-            <div className="halo" />
-            {config.hero.heroImage ? (
-              <Image
-                alt={config.hero.title}
-                className="heroImage"
-                height={900}
-                src={config.hero.heroImage}
-                unoptimized
-                width={1200}
-              />
-            ) : (
-              <div className="heroImage heroFallback">Aucune image principale</div>
-            )}
+          <div className="heroTextBlock">
+            <p className="sectionTag">{copy.styleActive}</p>
+            <h2>{config.preferences.fontPreset}</h2>
+            <p>{copy.styleText}</p>
           </div>
         </section>
 
         {config.about.enabled ? (
           <section className="contentSection aboutCard" id="about">
-            <p className="sectionTag">{config.about.heading}</p>
+            <p className="sectionTag">{copy.sections.about}</p>
             <div className="splitHeading">
-              <h2>Une presence digitale qui reste simple a faire evoluer.</h2>
+              <h2>{copy.aboutTitle}</h2>
               <p>{config.about.body}</p>
             </div>
           </section>
@@ -117,8 +195,8 @@ export function PortfolioView({ config }: PortfolioViewProps) {
         {config.services.enabled ? (
           <section className="contentSection" id="services">
             <div className="sectionHeader">
-              <p className="sectionTag">{config.services.heading}</p>
-              <h2>Un portfolio qui peut changer au meme rythme que tes ambitions.</h2>
+              <p className="sectionTag">{copy.sections.services}</p>
+              <h2>{copy.servicesTitle}</h2>
             </div>
             <div className="cardGrid">
               {config.services.items.map((item) => (
@@ -134,28 +212,18 @@ export function PortfolioView({ config }: PortfolioViewProps) {
         {config.projects.enabled ? (
           <section className="contentSection" id="projects">
             <div className="sectionHeader">
-              <p className="sectionTag">{config.projects.heading}</p>
-              <h2>Selection recente</h2>
+              <p className="sectionTag">{copy.sections.projects}</p>
+              <h2>{copy.projectsTitle}</h2>
             </div>
             <div className="projectList">
               {config.projects.items.map((project) => (
-                <article className="projectCard" key={project.name}>
-                  {project.image ? (
-                    <Image
-                      alt={project.name}
-                      className="projectImage"
-                      height={720}
-                      src={project.image}
-                      unoptimized
-                      width={1280}
-                    />
-                  ) : null}
+                <article className="projectCard projectCardSimple" key={project.name}>
                   <div>
                     <h3>{project.name}</h3>
                     <p>{project.summary}</p>
                   </div>
                   <a href={project.url} rel="noreferrer" target="_blank">
-                    Ouvrir
+                    {copy.openProject}
                   </a>
                 </article>
               ))}
@@ -163,35 +231,10 @@ export function PortfolioView({ config }: PortfolioViewProps) {
           </section>
         ) : null}
 
-        {config.gallery.enabled ? (
-          <section className="contentSection" id="gallery">
-            <div className="sectionHeader">
-              <p className="sectionTag">{config.gallery.heading}</p>
-              <h2>Galerie visuelle</h2>
-            </div>
-            <div className="galleryGrid">
-              {config.gallery.images
-                .filter((image) => image.src)
-                .map((image, index) => (
-                <figure className="galleryCard" key={`${image.src}-${index}`}>
-                  <Image
-                    alt={image.alt}
-                    height={675}
-                    src={image.src}
-                    unoptimized
-                    width={900}
-                  />
-                  <figcaption>{image.alt}</figcaption>
-                </figure>
-                ))}
-            </div>
-          </section>
-        ) : null}
-
         {config.contact.enabled ? (
           <section className="contentSection contactCard" id="contact">
             <div>
-              <p className="sectionTag">{config.contact.heading}</p>
+              <p className="sectionTag">{copy.sections.contact}</p>
               <h2>{config.contact.callToAction}</h2>
             </div>
             <div className="contactDetails">
