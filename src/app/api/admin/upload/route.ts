@@ -1,8 +1,10 @@
-import { put } from "@vercel/blob";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-
 import { NextResponse } from "next/server";
+
+import {
+  getSupabaseServerClient,
+  isSupabaseConfigured,
+  portfolioMediaBucket,
+} from "@/lib/portfolio";
 
 function sanitizeFileName(name: string) {
   return name.replace(/[^a-zA-Z0-9.-]/g, "-").toLowerCase();
@@ -16,22 +18,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Fichier manquant" }, { status: 400 });
   }
 
-  const fileName = `${Date.now()}-${sanitizeFileName(file.name)}`;
-
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`portfolio/${fileName}`, file, {
-      access: "public",
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    });
-
-    return NextResponse.json({ url: blob.url });
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json(
+      { error: "Supabase n'est pas configure pour les uploads." },
+      { status: 500 },
+    );
   }
 
-  const uploadDirectory = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDirectory, { recursive: true });
-  const filePath = path.join(uploadDirectory, fileName);
+  const fileName = `${Date.now()}-${sanitizeFileName(file.name)}`;
+  const filePath = `portfolio/${fileName}`;
+  const supabase = getSupabaseServerClient();
 
-  await writeFile(filePath, Buffer.from(await file.arrayBuffer()));
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Client Supabase indisponible." },
+      { status: 500 },
+    );
+  }
 
-  return NextResponse.json({ url: `/uploads/${fileName}` });
+  const { error } = await supabase.storage
+    .from(portfolioMediaBucket)
+    .upload(filePath, Buffer.from(await file.arrayBuffer()), {
+      contentType: file.type || undefined,
+      upsert: true,
+    });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const { data } = supabase.storage
+    .from(portfolioMediaBucket)
+    .getPublicUrl(filePath);
+
+  return NextResponse.json({ url: data.publicUrl });
 }

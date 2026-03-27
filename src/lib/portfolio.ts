@@ -1,6 +1,6 @@
-import { get, put } from "@vercel/blob";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { createClient } from "@supabase/supabase-js";
 
 export type ThemeMode = "light" | "dark";
 
@@ -71,7 +71,34 @@ export type PortfolioConfig = {
 
 const configPath = path.join(process.cwd(), "data", "portfolio-config.json");
 const uploadsPath = path.join(process.cwd(), "public", "uploads");
-const blobConfigPath = "portfolio/config.json";
+export const portfolioMediaBucket =
+  process.env.SUPABASE_STORAGE_BUCKET ?? "portfolio-media";
+
+type SupabasePortfolioRow = {
+  key: string;
+  data: Partial<PortfolioConfig>;
+  updated_at?: string;
+};
+
+export function getSupabaseServerClient() {
+  const url = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceRoleKey) {
+    return null;
+  }
+
+  return createClient(url, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
+
+export function isSupabaseConfigured() {
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
 
 export const defaultPortfolioConfig: PortfolioConfig = {
   site: {
@@ -255,21 +282,41 @@ export async function ensurePortfolioStorage() {
 export async function getPortfolioConfig() {
   await ensurePortfolioStorage();
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blobResult = await get(blobConfigPath, { access: "public" });
+  const supabase = getSupabaseServerClient();
 
-    if (blobResult) {
-      const content = await new Response(blobResult.stream).text();
-      return mergePortfolioConfig(JSON.parse(content) as Partial<PortfolioConfig>);
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("portfolio_configs")
+      .select("key, data, updated_at")
+      .eq("key", "primary")
+      .maybeSingle<SupabasePortfolioRow>();
+
+    if (error) {
+      throw new Error(
+        `Lecture Supabase impossible: ${error.message}. Verifie la table portfolio_configs.`,
+      );
     }
 
-    await put(blobConfigPath, JSON.stringify(defaultPortfolioConfig, null, 2), {
-      access: "public",
-      allowOverwrite: true,
-      contentType: "application/json",
-    });
+    if (data?.data) {
+      return mergePortfolioConfig(data.data);
+    }
 
-    return defaultPortfolioConfig;
+    const initialConfig = mergePortfolioConfig(defaultPortfolioConfig);
+    const { error: insertError } = await supabase.from("portfolio_configs").upsert(
+      {
+        key: "primary",
+        data: initialConfig,
+      },
+      { onConflict: "key" },
+    );
+
+    if (insertError) {
+      throw new Error(
+        `Initialisation Supabase impossible: ${insertError.message}.`,
+      );
+    }
+
+    return initialConfig;
   }
 
   try {
@@ -288,19 +335,29 @@ export async function getPortfolioConfig() {
 export async function savePortfolioConfig(config: PortfolioConfig) {
   const normalized = mergePortfolioConfig(config);
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    await put(blobConfigPath, JSON.stringify(normalized, null, 2), {
-      access: "public",
-      allowOverwrite: true,
-      contentType: "application/json",
-    });
+  const supabase = getSupabaseServerClient();
+
+  if (supabase) {
+    const { error } = await supabase.from("portfolio_configs").upsert(
+      {
+        key: "primary",
+        data: normalized,
+      },
+      { onConflict: "key" },
+    );
+
+    if (error) {
+      throw new Error(
+        `Sauvegarde Supabase impossible: ${error.message}.`,
+      );
+    }
 
     return normalized;
   }
 
   if (process.env.VERCEL) {
     throw new Error(
-      "BLOB_READ_WRITE_TOKEN manquant sur Vercel. Ajoute cette variable pour sauvegarder la configuration.",
+      "SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant sur Vercel. Configure Supabase pour sauvegarder la configuration.",
     );
   }
 

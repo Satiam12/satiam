@@ -6,6 +6,8 @@ export const metadata = {
   description: "Edition du portfolio satiam",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const config = await getPortfolioConfig();
 
