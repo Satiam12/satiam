@@ -109,6 +109,7 @@ export const defaultPortfolioConfig: PortfolioConfig = {
       "Parlons de votre prochaine vitrine, refonte ou identite digitale.",
   },
   socialLinks: [
+    { label: "Facebook", href: "https://facebook.com" },
     { label: "Instagram", href: "https://instagram.com" },
     { label: "LinkedIn", href: "https://linkedin.com" },
     { label: "GitHub", href: "https://github.com" },

@@ -105,6 +105,10 @@
   },
   "socialLinks": [
     {
+      "label": "Facebook",
+      "href": "https://facebook.com"
+    },
+    {
       "label": "Instagram",
       "href": "https://instagram.com"
     },
