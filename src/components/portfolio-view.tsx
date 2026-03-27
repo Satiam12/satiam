@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 
 import { getThemeStyles } from "@/lib/portfolio-theme";
@@ -137,6 +137,42 @@ export function PortfolioView({ config }: PortfolioViewProps) {
   const themeStyles = getThemeStyles(config) as CSSProperties;
   const copy = translations[language];
   const sizes = config.preferences.fontSizes;
+
+  useEffect(() => {
+    const nodes = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-reveal]"),
+    );
+
+    if (nodes.length === 0) {
+      return;
+    }
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      nodes.forEach((node) => node.classList.add("is-visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      {
+        threshold: 0.16,
+        rootMargin: "0px 0px -8% 0px",
+      },
+    );
+
+    nodes.forEach((node) => observer.observe(node));
+
+    return () => observer.disconnect();
+  }, []);
   const sectionLinks = [
     config.about.enabled ? { id: "about", label: copy.sections.about } : null,
     config.services.enabled ? { id: "services", label: copy.sections.services } : null,
@@ -197,7 +233,7 @@ export function PortfolioView({ config }: PortfolioViewProps) {
       </header>
 
       <main id="home">
-        <section className="heroPanel heroPanelSingle">
+        <section className="heroPanel heroPanelSingle revealOnScroll" data-reveal>
           <div className="heroCopy">
             <span className="eyebrow">{config.hero.badge}</span>
             <p className="subtitle" style={{ fontSize: `${Math.max(12, sizes.heroBody)}px` }}>
@@ -231,7 +267,7 @@ export function PortfolioView({ config }: PortfolioViewProps) {
         </section>
 
         {config.about.enabled ? (
-          <section className="contentSection aboutCard" id="about" style={{ fontSize: `${Math.max(12, sizes.about)}px` }}>
+          <section className="contentSection aboutCard revealOnScroll" data-reveal id="about" style={{ fontSize: `${Math.max(12, sizes.about)}px` }}>
             <p className="sectionTag">{copy.sections.about}</p>
             <div className="splitHeading">
               <h2 style={{ fontSize: `${Math.max(18, sizes.about + 16)}px` }}>{copy.aboutTitle}</h2>
@@ -241,14 +277,14 @@ export function PortfolioView({ config }: PortfolioViewProps) {
         ) : null}
 
         {config.services.enabled ? (
-          <section className="contentSection" id="services" style={{ fontSize: `${Math.max(12, sizes.services)}px` }}>
+          <section className="contentSection revealOnScroll" data-reveal id="services" style={{ fontSize: `${Math.max(12, sizes.services)}px` }}>
             <div className="sectionHeader">
               <p className="sectionTag">{copy.sections.services}</p>
               <h2 style={{ fontSize: `${Math.max(18, sizes.services + 14)}px` }}>{copy.servicesTitle}</h2>
             </div>
             <div className="cardGrid">
               {config.services.items.map((item) => (
-                <article className="infoCard" key={item.title}>
+                <article className="infoCard revealOnScroll" data-reveal key={item.title}>
                   <h3 style={{ fontSize: `${Math.max(16, sizes.services + 3)}px` }}>{item.title}</h3>
                   <p>{item.description}</p>
                 </article>
@@ -258,7 +294,7 @@ export function PortfolioView({ config }: PortfolioViewProps) {
         ) : null}
 
         {config.cursus.enabled ? (
-          <section className="contentSection" id="cursus" style={{ fontSize: `${Math.max(12, sizes.cursus)}px` }}>
+          <section className="contentSection revealOnScroll" data-reveal id="cursus" style={{ fontSize: `${Math.max(12, sizes.cursus)}px` }}>
             <div className="sectionHeader">
               <p className="sectionTag">{copy.sections.cursus}</p>
               <h2 style={{ fontSize: `${Math.max(18, sizes.cursus + 14)}px` }}>{config.cursus.heading}</h2>
@@ -266,7 +302,8 @@ export function PortfolioView({ config }: PortfolioViewProps) {
             <div className="cardGrid">
               {config.cursus.items.map((item) => (
                 <article
-                  className="infoCard"
+                  className="infoCard revealOnScroll"
+                  data-reveal
                   key={`${item.period}-${item.diploma}-${item.institution}`}
                 >
                   <p className="sectionTag">{item.period}</p>
@@ -280,7 +317,7 @@ export function PortfolioView({ config }: PortfolioViewProps) {
         ) : null}
 
         {config.experience.enabled ? (
-          <section className="contentSection" id="experience" style={{ fontSize: `${Math.max(12, sizes.experience)}px` }}>
+          <section className="contentSection revealOnScroll" data-reveal id="experience" style={{ fontSize: `${Math.max(12, sizes.experience)}px` }}>
             <div className="sectionHeader">
               <p className="sectionTag">{copy.sections.experience}</p>
               <h2 style={{ fontSize: `${Math.max(18, sizes.experience + 14)}px` }}>{config.experience.heading}</h2>
@@ -288,7 +325,8 @@ export function PortfolioView({ config }: PortfolioViewProps) {
             <div className="cardGrid">
               {config.experience.items.map((item) => (
                 <article
-                  className="infoCard"
+                  className="infoCard revealOnScroll"
+                  data-reveal
                   key={`${item.period}-${item.role}-${item.company}`}
                 >
                   <p className="sectionTag">{item.period}</p>
@@ -302,14 +340,14 @@ export function PortfolioView({ config }: PortfolioViewProps) {
         ) : null}
 
         {config.projects.enabled ? (
-          <section className="contentSection" id="projects" style={{ fontSize: `${Math.max(12, sizes.projects)}px` }}>
+          <section className="contentSection revealOnScroll" data-reveal id="projects" style={{ fontSize: `${Math.max(12, sizes.projects)}px` }}>
             <div className="sectionHeader">
               <p className="sectionTag">{copy.sections.projects}</p>
               <h2 style={{ fontSize: `${Math.max(18, sizes.projects + 14)}px` }}>{copy.projectsTitle}</h2>
             </div>
             <div className="projectList">
               {config.projects.items.map((project) => (
-                <article className="projectCard projectCardSimple" key={project.name}>
+                <article className="projectCard projectCardSimple revealOnScroll" data-reveal key={project.name}>
                   <div>
                     <h3 style={{ fontSize: `${Math.max(16, sizes.projects + 3)}px` }}>{project.name}</h3>
                     <p>{project.summary}</p>
@@ -324,7 +362,7 @@ export function PortfolioView({ config }: PortfolioViewProps) {
         ) : null}
 
         {config.contact.enabled ? (
-          <section className="contentSection contactCard" id="contact" style={{ fontSize: `${Math.max(12, sizes.contact)}px` }}>
+          <section className="contentSection contactCard revealOnScroll" data-reveal id="contact" style={{ fontSize: `${Math.max(12, sizes.contact)}px` }}>
             <div>
               <p className="sectionTag">{copy.sections.contact}</p>
               <h2 style={{ fontSize: `${Math.max(18, sizes.contact + 14)}px` }}>

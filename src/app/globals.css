@@ -222,6 +222,19 @@ html[data-theme="dark"] .statusText {
   width: 18px;
 }
 
+.revealOnScroll {
+  opacity: 0;
+  transform: translateY(24px) scale(0.99);
+  transition:
+    opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.revealOnScroll.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
 .nav a,
 .themeToggle,
 .adminSidebar button,
@@ -814,6 +827,15 @@ input[type="color"] {
 
   .inlineItemEditor {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revealOnScroll,
+  .revealOnScroll.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 
