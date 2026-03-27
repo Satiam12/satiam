@@ -929,7 +929,8 @@ input[type="color"] {
   }
 
   .focusSection {
-    min-height: auto;
+    min-height: calc(100svh - 150px);
+    scroll-margin-top: 108px;
   }
 
   .projectCard {
