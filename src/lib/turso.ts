@@ -3,19 +3,32 @@ import { createClient, type Client } from "@libsql/client";
 let cachedClient: Client | null = null;
 let schemaReady: Promise<void> | null = null;
 
-function getTursoCredentials() {
+type TursoConfigStatus = {
+  url: string;
+  authToken: string;
+  hasUrl: boolean;
+  hasAuthToken: boolean;
+};
+
+function getTursoCredentials(): TursoConfigStatus {
   const url = process.env.TURSO_DATABASE_URL?.trim();
   const authToken = process.env.TURSO_AUTH_TOKEN?.trim();
 
-  if (!url) {
-    return null;
-  }
+  return {
+    url: url ?? "",
+    authToken: authToken ?? "",
+    hasUrl: Boolean(url),
+    hasAuthToken: Boolean(authToken),
+  };
+}
 
-  return { url, authToken };
+export function getTursoConfigStatus() {
+  return getTursoCredentials();
 }
 
 export function hasTursoConfig() {
-  return Boolean(getTursoCredentials());
+  const credentials = getTursoCredentials();
+  return credentials.hasUrl && credentials.hasAuthToken;
 }
 
 export function getTursoClient() {
@@ -25,9 +38,16 @@ export function getTursoClient() {
 
   const credentials = getTursoCredentials();
 
-  if (!credentials) {
+  if (!credentials.hasUrl || !credentials.hasAuthToken) {
+    const missing = [
+      !credentials.hasUrl ? "TURSO_DATABASE_URL" : null,
+      !credentials.hasAuthToken ? "TURSO_AUTH_TOKEN" : null,
+    ]
+      .filter(Boolean)
+      .join(", ");
+
     throw new Error(
-      "Turso n'est pas configure. Ajoute TURSO_DATABASE_URL et TURSO_AUTH_TOKEN dans l'environnement.",
+      `Turso n'est pas configure. Variables manquantes: ${missing}.`,
     );
   }
 

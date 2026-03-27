@@ -1,7 +1,12 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { ensureTursoSchema, getTursoClient, hasTursoConfig } from "@/lib/turso";
+import {
+  ensureTursoSchema,
+  getTursoClient,
+  hasTursoConfig,
+  getTursoConfigStatus,
+} from "@/lib/turso";
 import type { PortfolioConfig } from "@/lib/portfolio-types";
 
 const configPath = path.join(process.cwd(), "data", "portfolio-config.json");
@@ -231,8 +236,16 @@ export async function savePortfolioConfig(config: PortfolioConfig) {
   }
 
   if (process.env.VERCEL) {
+    const turso = getTursoConfigStatus();
+    const missing = [
+      !turso.hasUrl ? "TURSO_DATABASE_URL" : null,
+      !turso.hasAuthToken ? "TURSO_AUTH_TOKEN" : null,
+    ]
+      .filter(Boolean)
+      .join(", ");
+
     throw new Error(
-      "Sur Vercel, ajoute TURSO_DATABASE_URL et TURSO_AUTH_TOKEN pour enregistrer les changements de l'admin.",
+      `Sur Vercel, Turso n'est pas completement configure. Variables manquantes: ${missing}.`,
     );
   }
 
