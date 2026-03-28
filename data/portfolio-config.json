@@ -39,7 +39,15 @@
       "contact": "inherit",
       "about": "inherit",
       "projects": "inherit"
-    }
+    },
+    "sectionOrder": [
+      "about",
+      "services",
+      "cursus",
+      "experience",
+      "projects",
+      "contact"
+    ]
   },
   "hero": {
     "badge": "Disponible pour missions freelance",

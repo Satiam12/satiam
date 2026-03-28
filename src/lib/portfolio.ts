@@ -53,6 +53,14 @@ export const defaultPortfolioConfig: PortfolioConfig = {
       projects: "inherit",
       contact: "inherit",
     },
+    sectionOrder: [
+      "about",
+      "services",
+      "cursus",
+      "experience",
+      "projects",
+      "contact",
+    ],
   },
   ui: {
     themeToggle: {
@@ -222,6 +230,9 @@ function mergePortfolioConfig(
         ...defaultPortfolioConfig.preferences.sectionFonts,
         ...incoming?.preferences?.sectionFonts,
       },
+      sectionOrder:
+        incoming?.preferences?.sectionOrder ??
+        defaultPortfolioConfig.preferences.sectionOrder,
     },
     ui: {
       ...defaultPortfolioConfig.ui,

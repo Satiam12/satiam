@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 
 import { getThemeStyles } from "@/lib/portfolio-theme";
-import type { PortfolioConfig } from "@/lib/portfolio-types";
+import type { PortfolioConfig, PortfolioSectionId } from "@/lib/portfolio-types";
 
 import { ThemeToggle } from "./theme-toggle";
 
@@ -13,6 +13,15 @@ type PortfolioViewProps = {
 };
 
 type PortfolioLanguage = "fr" | "mg" | "en";
+
+const defaultSectionOrder: PortfolioSectionId[] = [
+  "about",
+  "services",
+  "cursus",
+  "experience",
+  "projects",
+  "contact",
+];
 
 const translateCacheKey = (language: PortfolioLanguage) =>
   `portfolio-auto-translate-${language}`;
@@ -217,26 +226,41 @@ export function PortfolioView({ config }: PortfolioViewProps) {
   const t = useAutoTranslate(language);
   const sizes = config.preferences.fontSizes;
   const sectionFonts = config.preferences.sectionFonts;
-  const sectionLinks = [
-    config.about.enabled
-      ? { id: "about", label: t(config.about.heading) }
-      : null,
-    config.services.enabled
-      ? { id: "services", label: t(config.services.heading) }
-      : null,
-    config.cursus.enabled
-      ? { id: "cursus", label: t(config.cursus.label) }
-      : null,
-    config.experience.enabled
-      ? { id: "experience", label: t(config.experience.label) }
-      : null,
-    config.projects.enabled
-      ? { id: "projects", label: t(config.projects.heading) }
-      : null,
-    config.contact.enabled
-      ? { id: "contact", label: t(config.contact.heading) }
-      : null,
-  ].filter(Boolean) as Array<{ id: string; label: string }>;
+  const sectionOrder = config.preferences.sectionOrder.length
+    ? config.preferences.sectionOrder
+    : defaultSectionOrder;
+  const sectionLinks = sectionOrder
+    .map((sectionId) => {
+      switch (sectionId) {
+        case "about":
+          return config.about.enabled
+            ? { id: "about", label: t(config.about.heading) }
+            : null;
+        case "services":
+          return config.services.enabled
+            ? { id: "services", label: t(config.services.heading) }
+            : null;
+        case "cursus":
+          return config.cursus.enabled
+            ? { id: "cursus", label: t(config.cursus.label) }
+            : null;
+        case "experience":
+          return config.experience.enabled
+            ? { id: "experience", label: t(config.experience.label) }
+            : null;
+        case "projects":
+          return config.projects.enabled
+            ? { id: "projects", label: t(config.projects.heading) }
+            : null;
+        case "contact":
+          return config.contact.enabled
+            ? { id: "contact", label: t(config.contact.heading) }
+            : null;
+        default:
+          return null;
+      }
+    })
+    .filter(Boolean) as Array<{ id: string; label: string }>;
   const sectionIdsKey = sectionLinks.map((item) => item.id).join("|");
 
   useEffect(() => {
@@ -313,6 +337,206 @@ export function PortfolioView({ config }: PortfolioViewProps) {
     setLanguage(nextLanguage);
     window.localStorage.setItem("portfolio-language", nextLanguage);
   }
+
+  const sectionContent: Record<PortfolioSectionId, JSX.Element | null> = {
+    about: config.about.enabled ? (
+      <section
+        className="contentSection focusSection aboutCard revealOnScroll"
+        data-font-preset={
+          sectionFonts.about === "inherit" ? undefined : sectionFonts.about
+        }
+        data-reveal
+        id="about"
+        key="about"
+        style={{ fontSize: `${Math.max(12, sizes.about)}px` }}
+      >
+        <p className="sectionTag">{t(config.about.heading)}</p>
+        <div className="splitHeading">
+          <h2 style={{ fontSize: `${Math.max(18, sizes.about + 16)}px` }}>
+            {t(config.about.title)}
+          </h2>
+          <p>{t(config.about.body)}</p>
+        </div>
+      </section>
+    ) : null,
+    services: config.services.enabled ? (
+      <section
+        className="contentSection focusSection revealOnScroll"
+        data-font-preset={
+          sectionFonts.services === "inherit" ? undefined : sectionFonts.services
+        }
+        data-reveal
+        id="services"
+        key="services"
+        style={{ fontSize: `${Math.max(12, sizes.services)}px` }}
+      >
+        <div className="sectionHeader">
+          <p className="sectionTag">{t(config.services.heading)}</p>
+          <h2 style={{ fontSize: `${Math.max(18, sizes.services + 14)}px` }}>
+            {t(config.services.title)}
+          </h2>
+        </div>
+        <div className="cardGrid">
+          {config.services.items.map((item) => (
+            <article className="infoCard revealOnScroll" data-reveal key={item.title}>
+              <h3 style={{ fontSize: `${Math.max(16, sizes.services + 3)}px` }}>
+                {t(item.title)}
+              </h3>
+              <p>{t(item.description)}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    ) : null,
+    cursus: config.cursus.enabled ? (
+      <section
+        className="contentSection focusSection revealOnScroll"
+        data-font-preset={
+          sectionFonts.cursus === "inherit" ? undefined : sectionFonts.cursus
+        }
+        data-reveal
+        id="cursus"
+        key="cursus"
+        style={{ fontSize: `${Math.max(12, sizes.cursus)}px` }}
+      >
+        <div className="sectionHeader">
+          <p className="sectionTag">{t(config.cursus.label)}</p>
+          <h2 style={{ fontSize: `${Math.max(18, sizes.cursus + 14)}px` }}>
+            {t(config.cursus.heading)}
+          </h2>
+        </div>
+        <div className="cardGrid">
+          {config.cursus.items.map((item) => (
+            <article
+              className="infoCard revealOnScroll"
+              data-reveal
+              key={`${item.period}-${item.diploma}-${item.institution}`}
+            >
+              <p className="sectionTag">{t(item.period)}</p>
+              <h3 style={{ fontSize: `${Math.max(16, sizes.cursus + 3)}px` }}>
+                {t(item.diploma)}
+              </h3>
+              <p>{t(item.institution)}</p>
+              <p>{t(item.details)}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    ) : null,
+    experience: config.experience.enabled ? (
+      <section
+        className="contentSection focusSection revealOnScroll"
+        data-font-preset={
+          sectionFonts.experience === "inherit"
+            ? undefined
+            : sectionFonts.experience
+        }
+        data-reveal
+        id="experience"
+        key="experience"
+        style={{ fontSize: `${Math.max(12, sizes.experience)}px` }}
+      >
+        <div className="sectionHeader">
+          <p className="sectionTag">{t(config.experience.label)}</p>
+          <h2 style={{ fontSize: `${Math.max(18, sizes.experience + 14)}px` }}>
+            {t(config.experience.heading)}
+          </h2>
+        </div>
+        <div className="cardGrid">
+          {config.experience.items.map((item) => (
+            <article
+              className="infoCard revealOnScroll"
+              data-reveal
+              key={`${item.period}-${item.role}-${item.company}`}
+            >
+              <p className="sectionTag">{t(item.period)}</p>
+              <h3 style={{ fontSize: `${Math.max(16, sizes.experience + 3)}px` }}>
+                {t(item.role)}
+              </h3>
+              <p>{t(item.company)}</p>
+              <p>{t(item.details)}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    ) : null,
+    projects: config.projects.enabled ? (
+      <section
+        className="contentSection focusSection revealOnScroll"
+        data-font-preset={
+          sectionFonts.projects === "inherit"
+            ? undefined
+            : sectionFonts.projects
+        }
+        data-reveal
+        id="projects"
+        key="projects"
+        style={{ fontSize: `${Math.max(12, sizes.projects)}px` }}
+      >
+        <div className="sectionHeader">
+          <p className="sectionTag">{t(config.projects.heading)}</p>
+          <h2 style={{ fontSize: `${Math.max(18, sizes.projects + 14)}px` }}>
+            {t(config.projects.title)}
+          </h2>
+        </div>
+        <div className="projectList">
+          {config.projects.items.map((project) => (
+            <article className="projectCard projectCardSimple revealOnScroll" data-reveal key={project.name}>
+              <div>
+                <h3 style={{ fontSize: `${Math.max(16, sizes.projects + 3)}px` }}>
+                  {t(project.name)}
+                </h3>
+                <p>{t(project.summary)}</p>
+              </div>
+              <a href={project.url} rel="noreferrer" target="_blank">
+                {t(config.projects.openLabel)}
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
+    ) : null,
+    contact: config.contact.enabled ? (
+      <section
+        className="contentSection focusSection contactCard revealOnScroll"
+        data-font-preset={
+          sectionFonts.contact === "inherit" ? undefined : sectionFonts.contact
+        }
+        data-reveal
+        id="contact"
+        key="contact"
+        style={{ fontSize: `${Math.max(12, sizes.contact)}px` }}
+      >
+        <div>
+          <p className="sectionTag">{t(config.contact.heading)}</p>
+          <h2 style={{ fontSize: `${Math.max(18, sizes.contact + 14)}px` }}>
+            {t(config.contact.callToAction)}
+          </h2>
+        </div>
+        <div className="contactDetails">
+          <a href={`mailto:${config.contact.email}`}>{config.contact.email}</a>
+          <a href={`tel:${config.contact.phone.replace(/\s+/g, "")}`}>
+            {config.contact.phone}
+          </a>
+          <div className="socialRow">
+            {config.socialLinks.map((link) => (
+              <a
+                aria-label={t(link.label)}
+                className="socialIconLink"
+                href={link.href}
+                key={link.label}
+                rel="noreferrer"
+                target="_blank"
+                title={t(link.label)}
+              >
+                <SocialIcon label={link.label} />
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    ) : null,
+  };
 
   return (
     <div
@@ -402,205 +626,7 @@ export function PortfolioView({ config }: PortfolioViewProps) {
             </div>
           </div>
         </section>
-
-        {config.about.enabled ? (
-          <section
-            className="contentSection focusSection aboutCard revealOnScroll"
-            data-font-preset={
-              sectionFonts.about === "inherit" ? undefined : sectionFonts.about
-            }
-            data-reveal
-            id="about"
-            style={{ fontSize: `${Math.max(12, sizes.about)}px` }}
-          >
-            <p className="sectionTag">{t(config.about.heading)}</p>
-            <div className="splitHeading">
-              <h2 style={{ fontSize: `${Math.max(18, sizes.about + 16)}px` }}>
-                {t(config.about.title)}
-              </h2>
-              <p>{t(config.about.body)}</p>
-            </div>
-          </section>
-        ) : null}
-
-        {config.services.enabled ? (
-          <section
-            className="contentSection focusSection revealOnScroll"
-            data-font-preset={
-              sectionFonts.services === "inherit"
-                ? undefined
-                : sectionFonts.services
-            }
-            data-reveal
-            id="services"
-            style={{ fontSize: `${Math.max(12, sizes.services)}px` }}
-          >
-            <div className="sectionHeader">
-              <p className="sectionTag">{t(config.services.heading)}</p>
-              <h2 style={{ fontSize: `${Math.max(18, sizes.services + 14)}px` }}>
-                {t(config.services.title)}
-              </h2>
-            </div>
-            <div className="cardGrid">
-              {config.services.items.map((item) => (
-                <article className="infoCard revealOnScroll" data-reveal key={item.title}>
-                  <h3 style={{ fontSize: `${Math.max(16, sizes.services + 3)}px` }}>
-                    {t(item.title)}
-                  </h3>
-                  <p>{t(item.description)}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {config.cursus.enabled ? (
-          <section
-            className="contentSection focusSection revealOnScroll"
-            data-font-preset={
-              sectionFonts.cursus === "inherit" ? undefined : sectionFonts.cursus
-            }
-            data-reveal
-            id="cursus"
-            style={{ fontSize: `${Math.max(12, sizes.cursus)}px` }}
-          >
-            <div className="sectionHeader">
-              <p className="sectionTag">{t(config.cursus.label)}</p>
-              <h2 style={{ fontSize: `${Math.max(18, sizes.cursus + 14)}px` }}>
-                {t(config.cursus.heading)}
-              </h2>
-            </div>
-            <div className="cardGrid">
-              {config.cursus.items.map((item) => (
-                <article
-                  className="infoCard revealOnScroll"
-                  data-reveal
-                  key={`${item.period}-${item.diploma}-${item.institution}`}
-                >
-                  <p className="sectionTag">{t(item.period)}</p>
-                  <h3 style={{ fontSize: `${Math.max(16, sizes.cursus + 3)}px` }}>
-                    {t(item.diploma)}
-                  </h3>
-                  <p>{t(item.institution)}</p>
-                  <p>{t(item.details)}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {config.experience.enabled ? (
-          <section
-            className="contentSection focusSection revealOnScroll"
-            data-font-preset={
-              sectionFonts.experience === "inherit"
-                ? undefined
-                : sectionFonts.experience
-            }
-            data-reveal
-            id="experience"
-            style={{ fontSize: `${Math.max(12, sizes.experience)}px` }}
-          >
-            <div className="sectionHeader">
-              <p className="sectionTag">{t(config.experience.label)}</p>
-              <h2 style={{ fontSize: `${Math.max(18, sizes.experience + 14)}px` }}>
-                {t(config.experience.heading)}
-              </h2>
-            </div>
-            <div className="cardGrid">
-              {config.experience.items.map((item) => (
-                <article
-                  className="infoCard revealOnScroll"
-                  data-reveal
-                  key={`${item.period}-${item.role}-${item.company}`}
-                >
-                  <p className="sectionTag">{t(item.period)}</p>
-                  <h3 style={{ fontSize: `${Math.max(16, sizes.experience + 3)}px` }}>
-                    {t(item.role)}
-                  </h3>
-                  <p>{t(item.company)}</p>
-                  <p>{t(item.details)}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {config.projects.enabled ? (
-          <section
-            className="contentSection focusSection revealOnScroll"
-            data-font-preset={
-              sectionFonts.projects === "inherit"
-                ? undefined
-                : sectionFonts.projects
-            }
-            data-reveal
-            id="projects"
-            style={{ fontSize: `${Math.max(12, sizes.projects)}px` }}
-          >
-            <div className="sectionHeader">
-              <p className="sectionTag">{t(config.projects.heading)}</p>
-              <h2 style={{ fontSize: `${Math.max(18, sizes.projects + 14)}px` }}>
-                {t(config.projects.title)}
-              </h2>
-            </div>
-            <div className="projectList">
-              {config.projects.items.map((project) => (
-                <article className="projectCard projectCardSimple revealOnScroll" data-reveal key={project.name}>
-                  <div>
-                    <h3 style={{ fontSize: `${Math.max(16, sizes.projects + 3)}px` }}>
-                      {t(project.name)}
-                    </h3>
-                    <p>{t(project.summary)}</p>
-                  </div>
-                  <a href={project.url} rel="noreferrer" target="_blank">
-                    {t(config.projects.openLabel)}
-                  </a>
-                </article>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {config.contact.enabled ? (
-          <section
-            className="contentSection focusSection contactCard revealOnScroll"
-            data-font-preset={
-              sectionFonts.contact === "inherit" ? undefined : sectionFonts.contact
-            }
-            data-reveal
-            id="contact"
-            style={{ fontSize: `${Math.max(12, sizes.contact)}px` }}
-          >
-            <div>
-              <p className="sectionTag">{t(config.contact.heading)}</p>
-              <h2 style={{ fontSize: `${Math.max(18, sizes.contact + 14)}px` }}>
-                {t(config.contact.callToAction)}
-              </h2>
-            </div>
-            <div className="contactDetails">
-              <a href={`mailto:${config.contact.email}`}>{config.contact.email}</a>
-              <a href={`tel:${config.contact.phone.replace(/\s+/g, "")}`}>
-                {config.contact.phone}
-              </a>
-              <div className="socialRow">
-                {config.socialLinks.map((link) => (
-                  <a
-                    aria-label={t(link.label)}
-                    className="socialIconLink"
-                    href={link.href}
-                    key={link.label}
-                    rel="noreferrer"
-                    target="_blank"
-                    title={t(link.label)}
-                  >
-                    <SocialIcon label={link.label} />
-                  </a>
-                ))}
-              </div>
-            </div>
-          </section>
-        ) : null}
+        {sectionOrder.map((sectionId) => sectionContent[sectionId] ?? null)}
       </main>
     </div>
   );

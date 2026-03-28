@@ -1,6 +1,13 @@
 export type ThemeMode = "light" | "dark";
 export type FontPreset = "editorial" | "modern" | "classic";
 export type SectionFontPreset = FontPreset | "inherit";
+export type PortfolioSectionId =
+  | "about"
+  | "services"
+  | "cursus"
+  | "experience"
+  | "projects"
+  | "contact";
 
 export type PortfolioConfig = {
   site: {
@@ -44,6 +51,7 @@ export type PortfolioConfig = {
       projects: SectionFontPreset;
       contact: SectionFontPreset;
     };
+    sectionOrder: PortfolioSectionId[];
   };
   ui: {
     themeToggle: {

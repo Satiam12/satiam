@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import type {
   FontPreset,
   PortfolioConfig,
+  PortfolioSectionId,
   SectionFontPreset,
   ThemeMode,
 } from "@/lib/portfolio-types";
@@ -16,6 +17,15 @@ const paletteSuggestions = [
   { name: "Terre chaude", theme: { primary: "#d05f32", secondary: "#f3b57d", accent: "#1d6c63", background: "#f7efe3", surface: "#fff8ef", text: "#24150f", muted: "#6b564c", darkBackground: "#101213", darkSurface: "#171d1f", darkText: "#f7efe3", darkMuted: "#bcab9e" } },
   { name: "Ocean atelier", theme: { primary: "#0f6c7a", secondary: "#b6e3ea", accent: "#f08a5d", background: "#edf8fa", surface: "#ffffff", text: "#14343a", muted: "#5c7c82", darkBackground: "#09181d", darkSurface: "#10242b", darkText: "#ecf7f8", darkMuted: "#91afb4" } },
   { name: "Studio sable", theme: { primary: "#a44f2f", secondary: "#f1d3a3", accent: "#5f7c45", background: "#fbf3e6", surface: "#fffaf2", text: "#2e2017", muted: "#7b6659", darkBackground: "#161310", darkSurface: "#211b16", darkText: "#fff5e7", darkMuted: "#c4b5a1" } },
+];
+
+const defaultSectionOrder: PortfolioSectionId[] = [
+  "about",
+  "services",
+  "cursus",
+  "experience",
+  "projects",
+  "contact",
 ];
 
 export function AdminEditor({ initialConfig }: AdminEditorProps) {
@@ -62,6 +72,57 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
         },
       },
     }));
+  }
+
+  function moveSection(
+    sectionId: PortfolioSectionId,
+    direction: -1 | 1,
+  ) {
+    updateConfig((current) => {
+      const order = current.preferences.sectionOrder.length
+        ? current.preferences.sectionOrder
+        : defaultSectionOrder;
+      const index = order.indexOf(sectionId);
+      if (index === -1) {
+        return current;
+      }
+
+      const nextIndex = index + direction;
+      if (nextIndex < 0 || nextIndex >= order.length) {
+        return current;
+      }
+
+      const nextOrder = [...order];
+      const [moved] = nextOrder.splice(index, 1);
+      nextOrder.splice(nextIndex, 0, moved);
+
+      return {
+        ...current,
+        preferences: {
+          ...current.preferences,
+          sectionOrder: nextOrder,
+        },
+      };
+    });
+  }
+
+  function getSectionLabel(sectionId: PortfolioSectionId, current: PortfolioConfig) {
+    switch (sectionId) {
+      case "about":
+        return current.about.heading;
+      case "services":
+        return current.services.heading;
+      case "cursus":
+        return current.cursus.label || current.cursus.heading;
+      case "experience":
+        return current.experience.label || current.experience.heading;
+      case "projects":
+        return current.projects.heading;
+      case "contact":
+        return current.contact.heading;
+      default:
+        return sectionId;
+    }
   }
 
   function updateHeroStat(index: number, key: "label" | "value", value: string) {
@@ -307,6 +368,22 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
                 <input checked={config[key].enabled} onChange={(event) => updateConfig((current) => ({ ...current, [key]: { ...current[key], enabled: event.target.checked } }))} type="checkbox" />
                 {label}
               </label>
+            ))}
+          </div>
+          <div className="stackList">
+            <label className="fullWidth">Ordre des sections</label>
+            {(config.preferences.sectionOrder.length
+              ? config.preferences.sectionOrder
+              : defaultSectionOrder
+            ).map((sectionId, index, list) => (
+              <div className="inlineItemEditor" key={sectionId}>
+                <strong>{getSectionLabel(sectionId, config)}</strong>
+                <span>Position {index + 1}</span>
+                <div className="inlineActionRow">
+                  <button className="buttonSecondary" disabled={index === 0} onClick={() => moveSection(sectionId, -1)} type="button">Monter</button>
+                  <button className="buttonSecondary" disabled={index === list.length - 1} onClick={() => moveSection(sectionId, 1)} type="button">Descendre</button>
+                </div>
+              </div>
             ))}
           </div>
         </article>
