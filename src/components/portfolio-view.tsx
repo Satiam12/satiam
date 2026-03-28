@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { getThemeStyles } from "@/lib/portfolio-theme";
 import type { PortfolioConfig, PortfolioSectionId } from "@/lib/portfolio-types";
@@ -338,7 +338,7 @@ export function PortfolioView({ config }: PortfolioViewProps) {
     window.localStorage.setItem("portfolio-language", nextLanguage);
   }
 
-  const sectionContent: Record<PortfolioSectionId, JSX.Element | null> = {
+  const sectionContent: Record<PortfolioSectionId, ReactNode> = {
     about: config.about.enabled ? (
       <section
         className="contentSection focusSection aboutCard revealOnScroll"
