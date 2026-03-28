@@ -202,6 +202,74 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
     }));
   }
 
+  function moveItem<T>(items: T[], index: number, direction: -1 | 1) {
+    const nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= items.length) {
+      return items;
+    }
+    const next = [...items];
+    const [moved] = next.splice(index, 1);
+    next.splice(nextIndex, 0, moved);
+    return next;
+  }
+
+  function moveHeroStat(index: number, direction: -1 | 1) {
+    updateConfig((current) => ({
+      ...current,
+      hero: {
+        ...current.hero,
+        stats: moveItem(current.hero.stats, index, direction),
+      },
+    }));
+  }
+
+  function moveServiceItem(index: number, direction: -1 | 1) {
+    updateConfig((current) => ({
+      ...current,
+      services: {
+        ...current.services,
+        items: moveItem(current.services.items, index, direction),
+      },
+    }));
+  }
+
+  function moveProjectItem(index: number, direction: -1 | 1) {
+    updateConfig((current) => ({
+      ...current,
+      projects: {
+        ...current.projects,
+        items: moveItem(current.projects.items, index, direction),
+      },
+    }));
+  }
+
+  function moveCursusItem(index: number, direction: -1 | 1) {
+    updateConfig((current) => ({
+      ...current,
+      cursus: {
+        ...current.cursus,
+        items: moveItem(current.cursus.items, index, direction),
+      },
+    }));
+  }
+
+  function moveExperienceItem(index: number, direction: -1 | 1) {
+    updateConfig((current) => ({
+      ...current,
+      experience: {
+        ...current.experience,
+        items: moveItem(current.experience.items, index, direction),
+      },
+    }));
+  }
+
+  function moveSocialLink(index: number, direction: -1 | 1) {
+    updateConfig((current) => ({
+      ...current,
+      socialLinks: moveItem(current.socialLinks, index, direction),
+    }));
+  }
+
   async function saveConfig() {
     startTransition(async () => {
       setStatus("Enregistrement...");
@@ -345,7 +413,11 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
                 <div className="inlineItemEditor" key={`${item.label}-${index}`}>
                   <input value={item.value} onChange={(event) => updateHeroStat(index, "value", event.target.value)} placeholder="Valeur" />
                   <input value={item.label} onChange={(event) => updateHeroStat(index, "label", event.target.value)} placeholder="Label" />
-                  <button className="buttonDanger" onClick={() => updateConfig((current) => ({ ...current, hero: { ...current.hero, stats: current.hero.stats.filter((_, itemIndex) => itemIndex !== index) } }))} type="button">Supprimer</button>
+                  <div className="inlineActionRow fullWidth">
+                    <button className="buttonSecondary" disabled={index === 0} onClick={() => moveHeroStat(index, -1)} type="button">Monter</button>
+                    <button className="buttonSecondary" disabled={index === config.hero.stats.length - 1} onClick={() => moveHeroStat(index, 1)} type="button">Descendre</button>
+                    <button className="buttonDanger" onClick={() => updateConfig((current) => ({ ...current, hero: { ...current.hero, stats: current.hero.stats.filter((_, itemIndex) => itemIndex !== index) } }))} type="button">Supprimer</button>
+                  </div>
                 </div>
               ))}
               <button className="buttonSecondary" onClick={() => updateConfig((current) => ({ ...current, hero: { ...current.hero, stats: [...current.hero.stats, { value: "0", label: "Nouvelle statistique" }] } }))} type="button">Ajouter une statistique</button>
@@ -411,6 +483,10 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
                 <div className="itemEditor" key={`${item.title}-${index}`}>
                   <input value={item.title} onChange={(event) => updateService(index, "title", event.target.value)} placeholder="Titre du service" />
                   <textarea rows={3} value={item.description} onChange={(event) => updateService(index, "description", event.target.value)} placeholder="Description du service" />
+                  <div className="inlineActionRow">
+                    <button className="buttonSecondary" disabled={index === 0} onClick={() => moveServiceItem(index, -1)} type="button">Monter</button>
+                    <button className="buttonSecondary" disabled={index === config.services.items.length - 1} onClick={() => moveServiceItem(index, 1)} type="button">Descendre</button>
+                  </div>
                   <button className="buttonDanger" onClick={() => updateConfig((current) => ({ ...current, services: { ...current.services, items: current.services.items.filter((_, itemIndex) => itemIndex !== index) } }))} type="button">Supprimer ce service</button>
                 </div>
               ))}
@@ -423,6 +499,10 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
                   <input value={item.name} onChange={(event) => updateProject(index, "name", event.target.value)} placeholder="Nom du projet" />
                   <textarea rows={3} value={item.summary} onChange={(event) => updateProject(index, "summary", event.target.value)} placeholder="Resume du projet" />
                   <input value={item.url} onChange={(event) => updateProject(index, "url", event.target.value)} placeholder="https://..." />
+                  <div className="inlineActionRow">
+                    <button className="buttonSecondary" disabled={index === 0} onClick={() => moveProjectItem(index, -1)} type="button">Monter</button>
+                    <button className="buttonSecondary" disabled={index === config.projects.items.length - 1} onClick={() => moveProjectItem(index, 1)} type="button">Descendre</button>
+                  </div>
                   <button className="buttonDanger" onClick={() => updateConfig((current) => ({ ...current, projects: { ...current.projects, items: current.projects.items.filter((_, itemIndex) => itemIndex !== index) } }))} type="button">Supprimer ce projet</button>
                 </div>
               ))}
@@ -436,6 +516,10 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
                   <input value={item.diploma} onChange={(event) => updateCursus(index, "diploma", event.target.value)} placeholder="Diplome / parcours" />
                   <input value={item.institution} onChange={(event) => updateCursus(index, "institution", event.target.value)} placeholder="Ecole / institution" />
                   <textarea rows={3} value={item.details} onChange={(event) => updateCursus(index, "details", event.target.value)} placeholder="Details" />
+                  <div className="inlineActionRow">
+                    <button className="buttonSecondary" disabled={index === 0} onClick={() => moveCursusItem(index, -1)} type="button">Monter</button>
+                    <button className="buttonSecondary" disabled={index === config.cursus.items.length - 1} onClick={() => moveCursusItem(index, 1)} type="button">Descendre</button>
+                  </div>
                   <button className="buttonDanger" onClick={() => updateConfig((current) => ({ ...current, cursus: { ...current.cursus, items: current.cursus.items.filter((_, itemIndex) => itemIndex !== index) } }))} type="button">Supprimer ce cursus</button>
                 </div>
               ))}
@@ -449,6 +533,10 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
                   <input value={item.role} onChange={(event) => updateExperience(index, "role", event.target.value)} placeholder="Poste" />
                   <input value={item.company} onChange={(event) => updateExperience(index, "company", event.target.value)} placeholder="Entreprise" />
                   <textarea rows={3} value={item.details} onChange={(event) => updateExperience(index, "details", event.target.value)} placeholder="Details" />
+                  <div className="inlineActionRow">
+                    <button className="buttonSecondary" disabled={index === 0} onClick={() => moveExperienceItem(index, -1)} type="button">Monter</button>
+                    <button className="buttonSecondary" disabled={index === config.experience.items.length - 1} onClick={() => moveExperienceItem(index, 1)} type="button">Descendre</button>
+                  </div>
                   <button className="buttonDanger" onClick={() => updateConfig((current) => ({ ...current, experience: { ...current.experience, items: current.experience.items.filter((_, itemIndex) => itemIndex !== index) } }))} type="button">Supprimer cette experience</button>
                 </div>
               ))}
@@ -460,7 +548,11 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
                 <div className="inlineItemEditor" key={`${item.label}-${index}`}>
                   <input value={item.label} onChange={(event) => updateSocial(index, "label", event.target.value)} placeholder="Nom du reseau" />
                   <input value={item.href} onChange={(event) => updateSocial(index, "href", event.target.value)} placeholder="https://..." />
-                  <button className="buttonDanger" onClick={() => updateConfig((current) => ({ ...current, socialLinks: current.socialLinks.filter((_, itemIndex) => itemIndex !== index) }))} type="button">Supprimer</button>
+                  <div className="inlineActionRow fullWidth">
+                    <button className="buttonSecondary" disabled={index === 0} onClick={() => moveSocialLink(index, -1)} type="button">Monter</button>
+                    <button className="buttonSecondary" disabled={index === config.socialLinks.length - 1} onClick={() => moveSocialLink(index, 1)} type="button">Descendre</button>
+                    <button className="buttonDanger" onClick={() => updateConfig((current) => ({ ...current, socialLinks: current.socialLinks.filter((_, itemIndex) => itemIndex !== index) }))} type="button">Supprimer</button>
+                  </div>
                 </div>
               ))}
               <button className="buttonSecondary" onClick={() => updateConfig((current) => ({ ...current, socialLinks: [...current.socialLinks, { label: "Nouveau reseau", href: "#" }] }))} type="button">Ajouter un reseau</button>
