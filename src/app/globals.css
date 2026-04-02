@@ -312,6 +312,11 @@ html[data-theme="dark"] .statusText {
   grid-template-columns: 1fr;
 }
 
+.heroPanelWithPhoto {
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+}
+
 .heroCopy {
   position: relative;
   z-index: 1;
@@ -376,6 +381,38 @@ html[data-theme="dark"] .statusText {
   display: flex;
   flex-wrap: wrap;
   margin-top: 24px;
+}
+
+.heroPhotoCard {
+  align-items: end;
+  background: linear-gradient(
+    170deg,
+    rgba(255, 255, 255, 0.42),
+    rgba(255, 255, 255, 0.18)
+  );
+  border: 1px solid var(--surface-border);
+  border-radius: 32px;
+  display: flex;
+  justify-content: center;
+  min-height: 100%;
+  overflow: hidden;
+  padding: 14px;
+}
+
+html[data-theme="dark"] .heroPhotoCard {
+  background: linear-gradient(
+    170deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.02)
+  );
+}
+
+.heroPhoto {
+  border-radius: 24px;
+  height: auto;
+  max-height: 72vh;
+  object-fit: cover;
+  width: 100%;
 }
 
 .heroTextBlock {
@@ -951,6 +988,10 @@ input[type="color"] {
   .adminCard,
   .adminSidebar {
     padding: 22px;
+  }
+
+  .heroPhoto {
+    max-height: 54vh;
   }
 
   .focusSection {

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
@@ -443,7 +444,7 @@ export function PortfolioView({ config }: PortfolioViewProps) {
 
       <main id="home">
         <section
-          className="heroPanel heroPanelSingle revealOnScroll"
+          className="heroPanel heroPanelWithPhoto revealOnScroll"
           data-font-preset={
             sectionFonts.hero === "inherit" ? undefined : sectionFonts.hero
           }
@@ -480,6 +481,16 @@ export function PortfolioView({ config }: PortfolioViewProps) {
                 </article>
               ))}
             </div>
+          </div>
+          <div className="heroPhotoCard">
+            <Image
+              alt={`Photo de ${config.site.ownerName}`}
+              className="heroPhoto"
+              height={1024}
+              priority
+              src="/hero/satiam.jpeg"
+              width={576}
+            />
           </div>
         </section>
         {sectionOrder.map((sectionId) => sectionContent[sectionId] ?? null)}
