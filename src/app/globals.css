@@ -617,6 +617,11 @@ html[data-theme="dark"] .projectCard {
   transform: translateY(-1px);
 }
 
+.adminTopbar a.active {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: #fffaf3;
+}
+
 .adminHeroCard,
 .adminCard {
   border-radius: 30px;

@@ -11,5 +11,5 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   const config = await getPortfolioConfig();
 
-  return <AdminEditor initialConfig={config} />;
+  return <AdminEditor currentPage="overview" initialConfig={config} />;
 }

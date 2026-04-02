@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
+import {
+  adminPageKeys,
+  adminPageLabels,
+  getAdminPageHref,
+  type AdminPageKey,
+} from "@/lib/admin-pages";
 import { getTranslationFields } from "@/lib/portfolio-translations";
 import type {
   FontPreset,
@@ -13,7 +19,10 @@ import type {
   ThemeMode,
 } from "@/lib/portfolio-types";
 
-type AdminEditorProps = { initialConfig: PortfolioConfig };
+type AdminEditorProps = {
+  initialConfig: PortfolioConfig;
+  currentPage: AdminPageKey;
+};
 
 const paletteSuggestions = [
   { name: "Terre chaude", theme: { primary: "#d05f32", secondary: "#f3b57d", accent: "#1d6c63", background: "#f7efe3", surface: "#fff8ef", text: "#24150f", muted: "#6b564c", darkBackground: "#101213", darkSurface: "#171d1f", darkText: "#f7efe3", darkMuted: "#bcab9e" } },
@@ -30,7 +39,7 @@ const defaultSectionOrder: PortfolioSectionId[] = [
   "contact",
 ];
 
-export function AdminEditor({ initialConfig }: AdminEditorProps) {
+export function AdminEditor({ initialConfig, currentPage }: AdminEditorProps) {
   const [config, setConfig] = useState(initialConfig);
   const [translationLanguage, setTranslationLanguage] =
     useState<ManualTranslationLanguage>("mg");
@@ -307,16 +316,13 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
     });
   }
 
-  const adminSectionLinks = [
-    { id: "admin-overview", label: "Tableau de bord" },
-    { id: "admin-site", label: "Site" },
-    { id: "admin-font-sizes", label: "Polices" },
-    { id: "admin-hero", label: "Hero" },
-    { id: "admin-sections", label: "Sections" },
-    { id: "admin-content", label: "Contenu" },
-    { id: "admin-translations", label: "Traductions" },
-    { id: "admin-colors", label: "Couleurs" },
-  ];
+  const adminPages = adminPageKeys.map((page) => ({
+    key: page,
+    label: adminPageLabels[page],
+    href: getAdminPageHref(page),
+  }));
+
+  const isPage = (page: AdminPageKey) => currentPage === page;
 
   return (
     <div className="adminShell">
@@ -338,13 +344,18 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
 
       <section className="adminPanels">
         <nav className="adminTopbar" role="navigation" aria-label="Navigation admin">
-          {adminSectionLinks.map((item) => (
-            <a href={`#${item.id}`} key={item.id}>
+          {adminPages.map((item) => (
+            <Link
+              className={currentPage === item.key ? "active" : undefined}
+              href={item.href}
+              key={item.key}
+            >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
+        {isPage("overview") ? (
         <article className="adminHeroCard" id="admin-overview">
           <div>
             <p className="sectionLabel">Tableau de bord</p>
@@ -357,7 +368,9 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
             <div className="quickCard"><span>Couleur active</span><strong>{config.theme.primary}</strong></div>
           </div>
         </article>
+        ) : null}
 
+        {isPage("site") ? (
         <article className="adminCard" id="admin-site">
           <div className="cardHeader">
             <div>
@@ -380,7 +393,9 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
             <label>Label langue EN<input value={config.ui.languageLabels.en} onChange={(event) => updateConfig((current) => ({ ...current, ui: { ...current.ui, languageLabels: { ...current.ui.languageLabels, en: event.target.value } } }))} /></label>
           </div>
         </article>
+        ) : null}
 
+        {isPage("typography") ? (
         <article className="adminCard" id="admin-font-sizes">
           <div className="cardHeader">
             <div>
@@ -410,7 +425,9 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
             <label>Contact<select value={config.preferences.sectionFonts.contact} onChange={(event) => updateSectionFont("contact", event.target.value)}><option value="inherit">Global</option><option value="editorial">Editorial</option><option value="modern">Modern</option><option value="classic">Classic</option></select></label>
           </div>
         </article>
+        ) : null}
 
+        {isPage("hero") ? (
         <article className="adminCard" id="admin-hero">
           <div className="cardHeader">
             <div><p className="sectionLabel">Hero</p><h2>Bloc principal et boutons</h2></div>
@@ -443,7 +460,9 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
             </div>
           </div>
         </article>
+        ) : null}
 
+        {isPage("sections") ? (
         <article className="adminCard" id="admin-sections">
           <div className="cardHeader"><div><p className="sectionLabel">Sections</p><h2>Afficher ou masquer</h2></div></div>
           <div className="toggleGrid">
@@ -478,7 +497,9 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
             ))}
           </div>
         </article>
+        ) : null}
 
+        {isPage("content") ? (
         <article className="adminCard" id="admin-content">
           <div className="cardHeader"><div><p className="sectionLabel">Contenu</p><h2>Textes et listes</h2></div></div>
           <div className="formGrid">
@@ -581,7 +602,9 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
             <label className="fullWidth">Message de contact<textarea rows={3} value={config.contact.callToAction} onChange={(event) => updateConfig((current) => ({ ...current, contact: { ...current.contact, callToAction: event.target.value } }))} /></label>
           </div>
         </article>
+        ) : null}
 
+        {isPage("translations") ? (
         <article className="adminCard" id="admin-translations">
           <div className="cardHeader">
             <div>
@@ -626,7 +649,9 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
             ))}
           </div>
         </article>
+        ) : null}
 
+        {isPage("colors") ? (
         <article className="adminCard" id="admin-colors">
           <div className="cardHeader"><div><p className="sectionLabel">Couleurs</p><h2>Palette claire et sombre</h2></div></div>
           <div className="paletteSuggestionGrid">
@@ -644,6 +669,7 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
             ))}
           </div>
         </article>
+        ) : null}
       </section>
       <button className="floatingSaveButton" disabled={isPending} onClick={saveConfig} type="button">
         {isPending ? "Enregistrement..." : "Enregistrer"}
