@@ -88,6 +88,9 @@ function useAutoTranslate(language: PortfolioLanguage) {
     [cache, language],
   );
 
+  // This effect intentionally runs after each render to flush the translation
+  // queue accumulated by `t()` during render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (language === "fr") {
       return;
