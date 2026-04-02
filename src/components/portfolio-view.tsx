@@ -1,18 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
+import { translateText } from "@/lib/portfolio-translations";
 import { getThemeStyles } from "@/lib/portfolio-theme";
-import type { PortfolioConfig, PortfolioSectionId } from "@/lib/portfolio-types";
+import type {
+  PortfolioConfig,
+  PortfolioLanguage,
+  PortfolioSectionId,
+} from "@/lib/portfolio-types";
 
 import { ThemeToggle } from "./theme-toggle";
 
 type PortfolioViewProps = {
   config: PortfolioConfig;
 };
-
-type PortfolioLanguage = "fr" | "mg" | "en";
 
 const defaultSectionOrder: PortfolioSectionId[] = [
   "about",
@@ -22,156 +25,6 @@ const defaultSectionOrder: PortfolioSectionId[] = [
   "projects",
   "contact",
 ];
-
-const translateCacheKey = (language: PortfolioLanguage) =>
-  `portfolio-auto-translate-${language}`;
-
-function shouldTranslate(text: string) {
-  const trimmed = text.trim();
-  if (!trimmed) {
-    return false;
-  }
-  if (/^https?:\/\//i.test(trimmed)) {
-    return false;
-  }
-  if (/^\S+@\S+\.\S+$/i.test(trimmed)) {
-    return false;
-  }
-  if (/^[\d\s+().-]+$/.test(trimmed)) {
-    return false;
-  }
-  if (/^[A-Z]{2,3}$/.test(trimmed)) {
-    return false;
-  }
-  return true;
-}
-
-function useAutoTranslate(language: PortfolioLanguage) {
-  const [cache, setCache] = useState<Record<string, string>>({});
-  const [isTranslating, setIsTranslating] = useState(false);
-  const pendingRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (language === "fr") {
-      setCache({});
-      return;
-    }
-
-    const stored = window.localStorage.getItem(translateCacheKey(language));
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as Record<string, string>;
-        setCache(parsed ?? {});
-      } catch {
-        setCache({});
-      }
-    } else {
-      setCache({});
-    }
-  }, [language]);
-
-  const t = useCallback(
-    (text: string) => {
-      if (language === "fr") {
-        return text;
-      }
-      if (!shouldTranslate(text)) {
-        return text;
-      }
-      const cached = cache[text];
-      if (cached) {
-        return cached;
-      }
-      pendingRef.current.add(text);
-      return text;
-    },
-    [cache, language],
-  );
-
-  // This effect intentionally runs after each render to flush the translation
-  // queue accumulated by `t()` during render.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (language === "fr") {
-      return;
-    }
-    if (isTranslating) {
-      return;
-    }
-    if (pendingRef.current.size === 0) {
-      return;
-    }
-
-    const texts = Array.from(pendingRef.current);
-    pendingRef.current.clear();
-    let isActive = true;
-    setIsTranslating(true);
-
-    (async () => {
-      try {
-        const response = await fetch("/api/translate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ target: language, texts }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Erreur de traduction");
-        }
-
-        const data = (await response.json()) as { translations?: string[] };
-        const translations = Array.isArray(data.translations)
-          ? data.translations
-          : [];
-
-        if (!isActive) {
-          return;
-        }
-
-        setCache((current) => {
-          const next = { ...current };
-          texts.forEach((text, index) => {
-            const translated = translations[index];
-            next[text] =
-              typeof translated === "string" && translated.trim().length > 0
-                ? translated
-                : text;
-          });
-          window.localStorage.setItem(
-            translateCacheKey(language),
-            JSON.stringify(next),
-          );
-          return next;
-        });
-      } catch {
-        if (!isActive) {
-          return;
-        }
-        setCache((current) => {
-          const next = { ...current };
-          texts.forEach((text) => {
-            next[text] = text;
-          });
-          window.localStorage.setItem(
-            translateCacheKey(language),
-            JSON.stringify(next),
-          );
-          return next;
-        });
-      } finally {
-        if (isActive) {
-          setIsTranslating(false);
-        }
-      }
-    })();
-
-    return () => {
-      isActive = false;
-    };
-  });
-
-  return t;
-}
 
 function SocialIcon({ label }: { label: string }) {
   const lower = label.toLowerCase();
@@ -226,7 +79,7 @@ export function PortfolioView({ config }: PortfolioViewProps) {
   });
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const themeStyles = getThemeStyles(config) as CSSProperties;
-  const t = useAutoTranslate(language);
+  const t = (text: string) => translateText(config, language, text);
   const sizes = config.preferences.fontSizes;
   const sectionFonts = config.preferences.sectionFonts;
   const sectionOrder = config.preferences.sectionOrder.length

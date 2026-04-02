@@ -190,6 +190,10 @@
       "href": "https://github.com"
     }
   ],
+  "translations": {
+    "mg": {},
+    "en": {}
+  },
   "ui": {
     "languageLabels": {
       "mg": "MG",

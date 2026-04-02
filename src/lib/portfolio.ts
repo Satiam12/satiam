@@ -73,6 +73,10 @@ export const defaultPortfolioConfig: PortfolioConfig = {
       en: "EN",
     },
   },
+  translations: {
+    mg: {},
+    en: {},
+  },
   hero: {
     badge: "Disponible pour missions freelance",
     title: "Je transforme mes idees en experiences web nettes, rapides et memorables.",
@@ -244,6 +248,18 @@ function mergePortfolioConfig(
       languageLabels: {
         ...defaultPortfolioConfig.ui.languageLabels,
         ...incoming?.ui?.languageLabels,
+      },
+    },
+    translations: {
+      ...defaultPortfolioConfig.translations,
+      ...incoming?.translations,
+      mg: {
+        ...defaultPortfolioConfig.translations.mg,
+        ...incoming?.translations?.mg,
+      },
+      en: {
+        ...defaultPortfolioConfig.translations.en,
+        ...incoming?.translations?.en,
       },
     },
     hero: {

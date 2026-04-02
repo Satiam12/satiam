@@ -191,6 +191,17 @@ html[data-theme="dark"] .statusText {
   padding: 4px;
 }
 
+.translationToggle {
+  margin-bottom: 16px;
+  width: fit-content;
+}
+
+.translationSource {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
 .languageButton {
   background: transparent;
   border: none;

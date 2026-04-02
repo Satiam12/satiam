@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
+import { getTranslationFields } from "@/lib/portfolio-translations";
 import type {
   FontPreset,
+  ManualTranslationLanguage,
   PortfolioConfig,
   PortfolioSectionId,
   SectionFontPreset,
@@ -30,8 +32,11 @@ const defaultSectionOrder: PortfolioSectionId[] = [
 
 export function AdminEditor({ initialConfig }: AdminEditorProps) {
   const [config, setConfig] = useState(initialConfig);
+  const [translationLanguage, setTranslationLanguage] =
+    useState<ManualTranslationLanguage>("mg");
   const [status, setStatus] = useState("Pret a enregistrer");
   const [isPending, startTransition] = useTransition();
+  const translationFields = getTranslationFields(config);
 
   function updateConfig(updater: (current: PortfolioConfig) => PortfolioConfig) {
     setConfig((current) => updater(current));
@@ -202,6 +207,19 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
     }));
   }
 
+  function updateManualTranslation(source: string, value: string) {
+    updateConfig((current) => ({
+      ...current,
+      translations: {
+        ...current.translations,
+        [translationLanguage]: {
+          ...current.translations[translationLanguage],
+          [source]: value,
+        },
+      },
+    }));
+  }
+
   function moveItem<T>(items: T[], index: number, direction: -1 | 1) {
     const nextIndex = index + direction;
     if (nextIndex < 0 || nextIndex >= items.length) {
@@ -296,6 +314,7 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
     { id: "admin-hero", label: "Hero" },
     { id: "admin-sections", label: "Sections" },
     { id: "admin-content", label: "Contenu" },
+    { id: "admin-translations", label: "Traductions" },
     { id: "admin-colors", label: "Couleurs" },
   ];
 
@@ -560,6 +579,51 @@ export function AdminEditor({ initialConfig }: AdminEditorProps) {
             <label>Email<input value={config.contact.email} onChange={(event) => updateConfig((current) => ({ ...current, contact: { ...current.contact, email: event.target.value } }))} /></label>
             <label>Telephone<input value={config.contact.phone} onChange={(event) => updateConfig((current) => ({ ...current, contact: { ...current.contact, phone: event.target.value } }))} /></label>
             <label className="fullWidth">Message de contact<textarea rows={3} value={config.contact.callToAction} onChange={(event) => updateConfig((current) => ({ ...current, contact: { ...current.contact, callToAction: event.target.value } }))} /></label>
+          </div>
+        </article>
+
+        <article className="adminCard" id="admin-translations">
+          <div className="cardHeader">
+            <div>
+              <p className="sectionLabel">Traductions</p>
+              <h2>Saisie manuelle des traductions</h2>
+              <p className="cardDescription">
+                Entre ici toutes les traductions manuelles. Plus de traduction
+                automatique.
+              </p>
+            </div>
+          </div>
+          <div className="languageToggle translationToggle" role="group" aria-label="Langue de traduction">
+            {(["mg", "en"] as const).map((lang) => (
+              <button
+                className={translationLanguage === lang ? "languageButton active" : "languageButton"}
+                key={lang}
+                onClick={() => setTranslationLanguage(lang)}
+                type="button"
+              >
+                {lang.toUpperCase()}
+              </button>
+            ))}
+          </div>
+          <div className="stackList">
+            {translationFields.map((field) => (
+              <div className="itemEditor" key={field.source}>
+                <strong>{field.label}</strong>
+                <p className="translationSource">
+                  Source FR: {field.source}
+                </p>
+                <textarea
+                  onChange={(event) =>
+                    updateManualTranslation(field.source, event.target.value)
+                  }
+                  placeholder={`Traduction ${translationLanguage.toUpperCase()}`}
+                  rows={3}
+                  value={
+                    config.translations[translationLanguage][field.source] ?? ""
+                  }
+                />
+              </div>
+            ))}
           </div>
         </article>
 

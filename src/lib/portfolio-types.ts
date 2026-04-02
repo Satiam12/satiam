@@ -8,6 +8,8 @@ export type PortfolioSectionId =
   | "experience"
   | "projects"
   | "contact";
+export type PortfolioLanguage = "fr" | "mg" | "en";
+export type ManualTranslationLanguage = Exclude<PortfolioLanguage, "fr">;
 
 export type PortfolioConfig = {
   site: {
@@ -63,6 +65,10 @@ export type PortfolioConfig = {
       mg: string;
       en: string;
     };
+  };
+  translations: {
+    mg: Record<string, string>;
+    en: Record<string, string>;
   };
   hero: {
     badge: string;
